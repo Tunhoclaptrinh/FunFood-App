@@ -1,3 +1,97 @@
 <resources>
+    <!-- App Name -->
     <string name="app_name">FunFood</string>
+
+    <!-- Common -->
+    <string name="ok">OK</string>
+    <string name="cancel">Hủy</string>
+    <string name="yes">Có</string>
+    <string name="no">Không</string>
+    <string name="save">Lưu</string>
+    <string name="delete">Xóa</string>
+    <string name="edit">Sửa</string>
+    <string name="search">Tìm kiếm</string>
+    <string name="filter">Lọc</string>
+    <string name="loading">Đang tải...</string>
+    <string name="retry">Thử lại</string>
+
+    <!-- Auth -->
+    <string name="login">Đăng nhập</string>
+    <string name="register">Đăng ký</string>
+    <string name="logout">Đăng xuất</string>
+    <string name="email">Email</string>
+    <string name="password">Mật khẩu</string>
+    <string name="name">Họ và tên</string>
+    <string name="phone">Số điện thoại</string>
+    <string name="address">Địa chỉ</string>
+
+    <!-- Navigation -->
+    <string name="nav_home">Trang chủ</string>
+    <string name="nav_orders">Đơn hàng</string>
+    <string name="nav_favorites">Yêu thích</string>
+    <string name="nav_profile">Tài khoản</string>
+
+    <!-- Home -->
+    <string name="search_food">Tìm món ăn, nhà hàng...</string>
+    <string name="categories">Danh mục</string>
+    <string name="promotions">Khuyến mãi</string>
+    <string name="popular_restaurants">Nhà hàng phổ biến</string>
+    <string name="nearby_restaurants">Nhà hàng gần bạn</string>
+
+    <!-- Restaurant -->
+    <string name="delivery_time">Thời gian giao</string>
+    <string name="delivery_fee">Phí giao hàng</string>
+    <string name="rating">Đánh giá</string>
+    <string name="reviews">nhận xét</string>
+    <string name="menu">Thực đơn</string>
+    <string name="open">Đang mở cửa</string>
+    <string name="closed">Đã đóng cửa</string>
+
+    <!-- Product -->
+    <string name="add_to_cart">Thêm vào giỏ</string>
+    <string name="quantity">Số lượng</string>
+    <string name="price">Giá</string>
+    <string name="discount">Giảm giá</string>
+    <string name="out_of_stock">Hết hàng</string>
+
+    <!-- Cart -->
+    <string name="cart">Giỏ hàng</string>
+    <string name="empty_cart">Giỏ hàng trống</string>
+    <string name="subtotal">Tạm tính</string>
+    <string name="total">Tổng cộng</string>
+    <string name="checkout">Thanh toán</string>
+    <string name="clear_cart">Xóa giỏ hàng</string>
+
+    <!-- Order -->
+    <string name="order_success">Đặt hàng thành công</string>
+    <string name="order_status">Trạng thái</string>
+    <string name="order_pending">Chờ xác nhận</string>
+    <string name="order_confirmed">Đã xác nhận</string>
+    <string name="order_preparing">Đang chuẩn bị</string>
+    <string name="order_delivering">Đang giao</string>
+    <string name="order_delivered">Đã giao</string>
+    <string name="order_cancelled">Đã hủy</string>
+    <string name="cancel_order">Hủy đơn</string>
+
+    <!-- Profile -->
+    <string name="my_profile">Tài khoản của tôi</string>
+    <string name="my_orders">Đơn hàng của tôi</string>
+    <string name="my_addresses">Địa chỉ giao hàng</string>
+    <string name="settings">Cài đặt</string>
+    <string name="about">Về chúng tôi</string>
+    <string name="logout_confirm">Bạn có chắc muốn đăng xuất?</string>
+
+    <!-- Error Messages -->
+    <string name="error_network">Không có kết nối mạng</string>
+    <string name="error_server">Lỗi server, vui lòng thử lại</string>
+    <string name="error_unknown">Đã có lỗi xảy ra</string>
+    <string name="error_field_required">Trường này không được để trống</string>
+    <string name="error_invalid_email">Email không hợp lệ</string>
+    <string name="error_password_short">Mật khẩu phải có ít nhất 6 ký tự</string>
+
+    <!-- Success Messages -->
+    <string name="success_login">Đăng nhập thành công</string>
+    <string name="success_register">Đăng ký thành công</string>
+    <string name="success_add_cart">Đã thêm vào giỏ hàng</string>
+    <string name="success_update">Cập nhật thành công</string>
 </resources>

@@ -21,14 +21,32 @@
         android:usesCleartextTraffic="true"
         tools:targetApi="31">
 
+        <!-- Splash Activity (LAUNCHER) -->
         <activity
-            android:name=".MainActivity"
-            android:exported="true">
+            android:name=".presentation.splash.SplashActivity"
+            android:exported="true"
+            android:theme="@style/Theme.FunFood.Splash">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!-- Auth Activities -->
+        <activity
+            android:name=".presentation.auth.LoginActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
+
+        <activity
+            android:name=".presentation.auth.RegisterActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
+
+        <!-- Main Activity -->
+        <activity
+            android:name=".presentation.main.MainActivity"
+            android:exported="false" />
 
         <!-- Google Maps API Key -->
         <meta-data
