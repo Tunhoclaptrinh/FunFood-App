@@ -1,9 +1,13 @@
 package com.example.funfood.presentation.notification;
 
+import android.app.Application;
+import androidx.annotation.NonNull;
+import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
-import androidx.lifecycle.ViewModel;
 
+import com.example.funfood.data.remote.RetrofitClient;
+import com.example.funfood.data.remote.api.NotificationApi;
 import com.example.funfood.data.remote.dto.ApiResponse;
 import com.example.funfood.data.repository.NotificationRepository;
 import com.example.funfood.domain.model.Notification;
@@ -12,16 +16,12 @@ import com.example.funfood.util.SingleEvent;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
-import javax.inject.Inject;
-import dagger.hilt.android.lifecycle.HiltViewModel;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-@HiltViewModel
-public class NotificationViewModel extends ViewModel {
+public class NotificationViewModel extends AndroidViewModel {
 
     private final NotificationRepository repository;
 
@@ -34,47 +34,54 @@ public class NotificationViewModel extends ViewModel {
     private int currentPage = 1;
     private static final int PAGE_LIMIT = 20;
 
-    @Inject
-    public NotificationViewModel(NotificationRepository repository) {
-        this.repository = repository;
-        fetchNotifications(false); // Tải lần đầu khi ViewModel được tạo
+    public NotificationViewModel(@NonNull Application application) {
+        super(application);
+        NotificationApi api = RetrofitClient.getInstance(application).createService(NotificationApi.class);
+        this.repository = new NotificationRepository(api);
+        fetchNotifications(false);
     }
 
     public void fetchNotifications(boolean isRefresh) {
         if (isRefresh) {
             currentPage = 1;
         }
-        _notifications.setValue(Resource.loading(isRefresh ? null : _notifications.getValue().data));
+
+        Resource<List<Notification>> currentResource = _notifications.getValue();
+        List<Notification> currentData = isRefresh ? null : (currentResource != null ? currentResource.getData() : null);
+        _notifications.setValue(Resource.loading(currentData));
 
         repository.getNotifications(currentPage, PAGE_LIMIT).enqueue(new Callback<ApiResponse<List<Notification>>>() {
             @Override
             public void onResponse(Call<ApiResponse<List<Notification>>> call, Response<ApiResponse<List<Notification>>> response) {
                 if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
-                    List<Notification> currentList = isRefresh ? new ArrayList<>() : (_notifications.getValue().data != null ? _notifications.getValue().data : new ArrayList<>());
-                    currentList.addAll(response.body().getData());
+                    List<Notification> newData = response.body().getData();
+                    if (newData == null) newData = new ArrayList<>();
+
+                    List<Notification> currentList = isRefresh ? new ArrayList<>() :
+                            (currentData != null ? new ArrayList<>(currentData) : new ArrayList<>());
+                    currentList.addAll(newData);
+
                     _notifications.setValue(Resource.success(currentList));
-                    // Có thể check thêm logic "hasMore" nếu API hỗ trợ
                     currentPage++;
                 } else {
-                    _notifications.setValue(Resource.error("Không thể tải thông báo", _notifications.getValue().data));
+                    _notifications.setValue(Resource.error("Không thể tải thông báo", currentData));
                 }
             }
 
             @Override
             public void onFailure(Call<ApiResponse<List<Notification>>> call, Throwable t) {
-                _notifications.setValue(Resource.error(t.getMessage(), _notifications.getValue().data));
+                _notifications.setValue(Resource.error(t.getMessage(), currentData));
             }
         });
     }
 
     public void markAsRead(Notification notification) {
-        if (notification.isRead()) return; // Đã đọc rồi thì không cần gọi API
+        if (notification.isRead()) return;
 
         repository.markAsRead(notification.getId()).enqueue(new Callback<ApiResponse<Notification>>() {
             @Override
             public void onResponse(Call<ApiResponse<Notification>> call, Response<ApiResponse<Notification>> response) {
                 if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
-                    // Cập nhật lại item trong danh sách LiveData
                     updateNotificationInList(response.body().getData());
                 } else {
                     _toastEvent.setValue(new SingleEvent<>("Đã có lỗi xảy ra"));
@@ -113,7 +120,7 @@ public class NotificationViewModel extends ViewModel {
             public void onResponse(Call<ApiResponse<Object>> call, Response<ApiResponse<Object>> response) {
                 if (response.isSuccessful()) {
                     _toastEvent.setValue(new SingleEvent<>("Đã đánh dấu đọc tất cả"));
-                    fetchNotifications(true); // Tải lại toàn bộ danh sách
+                    fetchNotifications(true);
                 } else {
                     _toastEvent.setValue(new SingleEvent<>("Không thể đánh dấu đọc tất cả"));
                 }
@@ -126,13 +133,11 @@ public class NotificationViewModel extends ViewModel {
         });
     }
 
-    // --- Helper functions ---
-
     private void updateNotificationInList(Notification updatedNotification) {
-        List<Notification> currentList = _notifications.getValue() != null ? _notifications.getValue().data : null;
-        if (currentList == null) return;
+        Resource<List<Notification>> currentResource = _notifications.getValue();
+        if (currentResource == null || currentResource.getData() == null) return;
 
-        List<Notification> newList = new ArrayList<>(currentList);
+        List<Notification> newList = new ArrayList<>(currentResource.getData());
         for (int i = 0; i < newList.size(); i++) {
             if (newList.get(i).getId() == updatedNotification.getId()) {
                 newList.set(i, updatedNotification);
@@ -143,11 +148,15 @@ public class NotificationViewModel extends ViewModel {
     }
 
     private void removeNotificationFromList(Notification notificationToRemove) {
-        List<Notification> currentList = _notifications.getValue() != null ? _notifications.getValue().data : null;
-        if (currentList == null) return;
+        Resource<List<Notification>> currentResource = _notifications.getValue();
+        if (currentResource == null || currentResource.getData() == null) return;
 
-        List<Notification> newList = new ArrayList<>(currentList);
-        newList.removeIf(n -> n.getId() == notificationToRemove.getId());
+        List<Notification> newList = new ArrayList<>();
+        for (Notification n : currentResource.getData()) {
+            if (n.getId() != notificationToRemove.getId()) {
+                newList.add(n);
+            }
+        }
         _notifications.setValue(Resource.success(newList));
     }
 }

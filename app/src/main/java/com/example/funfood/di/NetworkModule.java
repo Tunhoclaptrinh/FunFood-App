@@ -4,6 +4,8 @@ import androidx.test.espresso.core.internal.deps.dagger.Provides;
 
 import com.example.funfood.data.remote.api.NotificationApi;
 
+import javax.inject.Singleton;
+
 import retrofit2.Retrofit;
 
 public class NetworkModule {

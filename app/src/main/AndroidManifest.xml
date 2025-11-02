@@ -47,12 +47,12 @@
         <activity
             android:name=".presentation.main.MainActivity"
             android:exported="false" />
-        <activity android:name="com.example.funfood.presentation.notification.NotificationActivity" />
 
+        <!-- Notification Activity -->
         <activity
             android:name=".presentation.notification.NotificationActivity"
             android:exported="false"
-            android:theme="@style/Theme.FunFood.NoActionBar" />
+            android:theme="@style/Theme.FunFood" />
 
         <!-- Google Maps API Key -->
         <meta-data

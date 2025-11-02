@@ -5,6 +5,7 @@ import android.graphics.Typeface;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+
 import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.DiffUtil;
@@ -14,10 +15,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.funfood.R;
 import com.example.funfood.databinding.ItemNotificationBinding;
 import com.example.funfood.domain.model.Notification;
-import com.example.funfood.util.DateUtil; // Giả sử bạn có class này
-// import com.example.funfood.util.ImageUtil; // Dùng Glide/Picasso
-
-import java.util.Objects;
+import com.example.funfood.util.DateUtil;
 
 public class NotificationAdapter extends ListAdapter<Notification, NotificationAdapter.NotificationViewHolder> {
 
@@ -39,55 +37,57 @@ public class NotificationAdapter extends ListAdapter<Notification, NotificationA
         ItemNotificationBinding binding = ItemNotificationBinding.inflate(
                 LayoutInflater.from(parent.getContext()), parent, false
         );
-        return new NotificationViewHolder(binding, listener);
+        return new NotificationViewHolder(binding);
     }
 
     @Override
     public void onBindViewHolder(@NonNull NotificationViewHolder holder, int position) {
-        holder.bind(getItem(position));
+        Notification notification = getItem(position);
+        holder.bind(notification, listener);
     }
 
     static class NotificationViewHolder extends RecyclerView.ViewHolder {
         private final ItemNotificationBinding binding;
         private final Context context;
 
-        public NotificationViewHolder(@NonNull ItemNotificationBinding binding, OnNotificationClickListener listener) {
+        public NotificationViewHolder(@NonNull ItemNotificationBinding binding) {
             super(binding.getRoot());
             this.binding = binding;
             this.context = binding.getRoot().getContext();
-
-            binding.containerClickable.setOnClickListener(v -> {
-                int position = getAdapterPosition();
-                if (position != RecyclerView.NO_POSITION) {
-                    listener.onItemClick(getItem(position));
-                }
-            });
-
-            binding.ibDeleteNotification.setOnClickListener(v -> {
-                int position = getAdapterPosition();
-                if (position != RecyclerView.NO_POSITION) {
-                    listener.onDeleteClick(getItem(position));
-                }
-            });
         }
 
-        public void bind(Notification notification) {
+        public void bind(Notification notification, OnNotificationClickListener listener) {
+            binding.containerClickable.setOnClickListener(v ->
+                    listener.onItemClick(notification)
+            );
+
+            binding.ibDeleteNotification.setOnClickListener(v ->
+                    listener.onDeleteClick(notification)
+            );
+
             binding.tvNotificationTitle.setText(notification.getTitle());
             binding.tvNotificationMessage.setText(notification.getMessage());
-            binding.tvNotificationTime.setText(DateUtil.getTimeAgo(notification.getCreatedAt())); // Dùng DateUtil
 
-            // Xử lý trạng thái đã đọc/chưa đọc
+            String timeAgo = notification.getCreatedAt() != null ?
+                    DateUtil.getRelativeTime(notification.getCreatedAt().toString()) : "";
+            binding.tvNotificationTime.setText(timeAgo);
+
+            // Read/Unread state
             if (notification.isRead()) {
                 binding.viewUnreadIndicator.setVisibility(View.GONE);
                 binding.tvNotificationTitle.setTypeface(null, Typeface.NORMAL);
-                binding.containerClickable.setBackgroundColor(ContextCompat.getColor(context, android.R.color.transparent));
+                binding.containerClickable.setBackgroundColor(
+                        ContextCompat.getColor(context, android.R.color.transparent)
+                );
             } else {
                 binding.viewUnreadIndicator.setVisibility(View.VISIBLE);
                 binding.tvNotificationTitle.setTypeface(null, Typeface.BOLD);
-                binding.containerClickable.setBackgroundColor(ContextCompat.getColor(context, R.color.unread_notification_bg));
+                binding.containerClickable.setBackgroundColor(
+                        ContextCompat.getColor(context, R.color.unread_notification_bg)
+                );
             }
 
-            // Xử lý icon theo loại thông báo
+            // Icon by type
             switch (notification.getType()) {
                 case "order":
                     binding.ivNotificationIcon.setImageResource(R.drawable.ic_notification_order);
@@ -110,7 +110,6 @@ public class NotificationAdapter extends ListAdapter<Notification, NotificationA
 
                 @Override
                 public boolean areContentsTheSame(@NonNull Notification oldItem, @NonNull Notification newItem) {
-                    // Dùng equals() đã override trong Model
                     return oldItem.equals(newItem);
                 }
             };
