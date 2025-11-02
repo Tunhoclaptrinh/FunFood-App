@@ -1,6 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
 <navigation xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/nav_graph_main.xml">
+    android:id="@+id/nav_graph_main"
+    app:startDestination="@id/navigation_home">
+
+    <fragment
+        android:id="@+id/navigation_home"
+        android:name="com.example.funfood.presentation.main.home.HomeFragment"
+        android:label="@string/nav_home" />
+
+    <fragment
+        android:id="@+id/navigation_orders"
+        android:name="com.example.funfood.presentation.main.orders.OrdersFragment"
+        android:label="@string/nav_orders" />
+
+    <fragment
+        android:id="@+id/navigation_favorites"
+        android:name="com.example.funfood.presentation.main.favorite.FavoriteFragment"
+        android:label="@string/nav_favorites" />
+
+    <fragment
+        android:id="@+id/navigation_profile"
+        android:name="com.example.funfood.presentation.main.profile.ProfileFragment"
+        android:label="@string/nav_profile" />
 
 </navigation>

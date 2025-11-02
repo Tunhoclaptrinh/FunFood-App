@@ -1,0 +1,13 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/action_mark_all_read"
+        android:title="Đánh dấu tất cả đã đọc"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/action_clear_all"
+        android:title="Xóa tất cả"
+        app:showAsAction="never" />
+</menu>

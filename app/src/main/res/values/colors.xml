@@ -36,4 +36,31 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
     <color name="transparent">#00000000</color>
+
+    <!-- Notification -->
+    <color name="unread_notification_bg">#F0F8FF</color>
+
+    <!-- Shimmer Effect -->
+    <color name="shimmer_base">#E0E0E0</color>
+    <color name="shimmer_highlight">#F5F5F5</color>
+
+    <!-- Status Badge Colors -->
+    <color name="status_pending">#FFA500</color>
+    <color name="status_confirmed">#2196F3</color>
+    <color name="status_preparing">#9C27B0</color>
+    <color name="status_delivering">#FF9800</color>
+    <color name="status_delivered">#4CAF50</color>
+    <color name="status_cancelled">#F44336</color>
+
+    <!-- Overlay -->
+    <color name="overlay_dark">#80000000</color>
+    <color name="overlay_light">#40FFFFFF</color>
+
+    <!-- Border -->
+    <color name="border">#E0E0E0</color>
+    <color name="border_light">#F5F5F5</color>
+
+    <!-- Card -->
+    <color name="card_background">#FFFFFF</color>
+    <color name="card_shadow">#1A000000</color>
 </resources>

@@ -1,4 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:android="http://schemas.android.com/apk/res/android">
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/action_cart"
+        android:icon="@drawable/ic_cart"
+        android:title="Giỏ hàng"
+        app:showAsAction="always" />
+
+    <item
+        android:id="@+id/action_notifications"
+        android:icon="@drawable/ic_notification_system"
+        android:title="Thông báo"
+        app:showAsAction="always" />
+
+    <item
+        android:id="@+id/action_search"
+        android:icon="@android:drawable/ic_menu_search"
+        android:title="Tìm kiếm"
+        app:showAsAction="ifRoom" />
+
+    <item
+        android:id="@+id/action_logout"
+        android:title="@string/logout"
+        app:showAsAction="never" />
 
 </menu>
