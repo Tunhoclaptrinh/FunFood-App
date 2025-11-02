@@ -9,4 +9,7 @@ import retrofit2.http.GET;
 public interface PromotionApi {
     @GET("promotions/active")
     Call<ApiResponse<List<Promotion>>> getActivePromotions();
+
+    @GET("promotions")
+    Call<ApiResponse<List<Promotion>>> getPromotions();
 }
