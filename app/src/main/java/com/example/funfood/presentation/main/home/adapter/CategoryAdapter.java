@@ -10,24 +10,22 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.funfood.databinding.ItemCategoryBinding;
 import com.example.funfood.domain.model.Category;
-
-// Import Glide/Picasso
-// import com.bumptech.glide.Glide;
+import com.example.funfood.util.ImageUtil; // Import ImageUtil
 
 public class CategoryAdapter extends ListAdapter<Category, CategoryAdapter.CategoryViewHolder> {
 
-    public CategoryAdapter() {
-        super(new DiffUtil.ItemCallback<Category>() {
-            @Override
-            public boolean areItemsTheSame(@NonNull Category oldItem, @NonNull Category newItem) {
-                return oldItem.getId().equals(newItem.getId());
-            }
+    private OnCategoryClickListener listener;
 
-            @Override
-            public boolean areContentsTheSame(@NonNull Category oldItem, @NonNull Category newItem) {
-                return oldItem.equals(newItem);
-            }
-        });
+    public interface OnCategoryClickListener {
+        void onCategoryClick(Category category);
+    }
+
+    public void setOnCategoryClickListener(OnCategoryClickListener listener) {
+        this.listener = listener;
+    }
+
+    public CategoryAdapter() {
+        super(DIFF_CALLBACK);
     }
 
     @NonNull
@@ -43,7 +41,13 @@ public class CategoryAdapter extends ListAdapter<Category, CategoryAdapter.Categ
 
     @Override
     public void onBindViewHolder(@NonNull CategoryViewHolder holder, int position) {
-        holder.bind(getItem(position));
+        Category category = getItem(position);
+        holder.bind(category);
+        holder.itemView.setOnClickListener(v -> {
+            if (listener != null) {
+                listener.onCategoryClick(category);
+            }
+        });
     }
 
     static class CategoryViewHolder extends RecyclerView.ViewHolder {
@@ -57,11 +61,24 @@ public class CategoryAdapter extends ListAdapter<Category, CategoryAdapter.Categ
         public void bind(Category category) {
             binding.tvCategoryName.setText(category.getName());
 
-            // Dùng Glide hoặc Picasso để tải ảnh
-            // Glide.with(binding.ivCategoryImage.getContext())
-            //         .load(category.getImageUrl())
-            //         .placeholder(R.drawable.ic_placeholder_image) // Ảnh chờ
-            //         .into(binding.ivCategoryImage);
+            // Dùng ImageUtil để tải ảnh
+            ImageUtil.loadImage(
+                    binding.ivCategoryImage.getContext(),
+                    category.getImageUrl(),
+                    binding.ivCategoryImage
+            );
         }
     }
+
+    private static final DiffUtil.ItemCallback<Category> DIFF_CALLBACK = new DiffUtil.ItemCallback<Category>() {
+        @Override
+        public boolean areItemsTheSame(@NonNull Category oldItem, @NonNull Category newItem) {
+            return oldItem.getId().equals(newItem.getId());
+        }
+
+        @Override
+        public boolean areContentsTheSame(@NonNull Category oldItem, @NonNull Category newItem) {
+            return oldItem.equals(newItem);
+        }
+    };
 }

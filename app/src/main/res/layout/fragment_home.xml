@@ -5,7 +5,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:fillViewport="true">
+    android:fillViewport="true"
+    android:background="@color/background_light">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
@@ -19,8 +20,8 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
             android:layout_marginTop="24dp"
-            android:text="Trang chủ"
-            android:textSize="24sp"
+            android:text="@string/nav_home"
+            android:textAppearance="?attr/textAppearanceHeadlineSmall"
             android:textStyle="bold"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
@@ -36,8 +37,8 @@
             android:drawablePadding="8dp"
             android:gravity="center_vertical"
             android:padding="12dp"
-            android:text="Tìm kiếm món ăn, nhà hàng..."
-            android:textColor="@android:color/darker_gray"
+            android:text="@string/search_food"
+            android:textColor="@color/text_hint"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/tv_home_title" />
@@ -48,8 +49,8 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
             android:layout_marginTop="24dp"
-            android:text="Danh mục"
-            android:textSize="18sp"
+            android:text="@string/categories"
+            android:textAppearance="?attr/textAppearanceTitleMedium"
             android:textStyle="bold"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/tv_search_bar" />
@@ -69,16 +70,40 @@
             tools:listitem="@layout/item_category" />
 
         <TextView
+            android:id="@+id/tv_promotion_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="24dp"
+            android:text="@string/promotions"
+            android:textAppearance="?attr/textAppearanceTitleMedium"
+            android:textStyle="bold"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/rv_categories" />
+
+        <androidx.viewpager2.widget.ViewPager2
+            android:id="@+id/view_pager_promotions"
+            android:layout_width="0dp"
+            android:layout_height="150dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginHorizontal="16dp"
+            android:clipToPadding="false"
+            android:clipChildren="false"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tv_promotion_title" />
+
+        <TextView
             android:id="@+id/tv_restaurant_title"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
             android:layout_marginTop="24dp"
-            android:text="Nhà hàng gần bạn"
-            android:textSize="18sp"
+            android:text="@string/nearby_restaurants"
+            android:textAppearance="?attr/textAppearanceTitleMedium"
             android:textStyle="bold"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/rv_categories" />
+            app:layout_constraintTop_toBottomOf="@id/view_pager_promotions" />
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/rv_restaurants"
@@ -87,6 +112,7 @@
             android:layout_marginTop="8dp"
             android:clipToPadding="false"
             android:paddingHorizontal="12dp"
+            android:nestedScrollingEnabled="false"
             app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"

@@ -10,23 +10,22 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.funfood.databinding.ItemRestaurantBinding;
 import com.example.funfood.domain.model.Restaurant;
-
-// import com.bumptech.glide.Glide;
+import com.example.funfood.util.ImageUtil; // Import ImageUtil
 
 public class RestaurantAdapter extends ListAdapter<Restaurant, RestaurantAdapter.RestaurantViewHolder> {
 
-    public RestaurantAdapter() {
-        super(new DiffUtil.ItemCallback<Restaurant>() {
-            @Override
-            public boolean areItemsTheSame(@NonNull Restaurant oldItem, @NonNull Restaurant newItem) {
-                return oldItem.getId().equals(newItem.getId());
-            }
+    private OnRestaurantClickListener listener;
 
-            @Override
-            public boolean areContentsTheSame(@NonNull Restaurant oldItem, @NonNull Restaurant newItem) {
-                return oldItem.equals(newItem);
-            }
-        });
+    public interface OnRestaurantClickListener {
+        void onRestaurantClick(Restaurant restaurant);
+    }
+
+    public void setOnRestaurantClickListener(OnRestaurantClickListener listener) {
+        this.listener = listener;
+    }
+
+    public RestaurantAdapter() {
+        super(DIFF_CALLBACK);
     }
 
     @NonNull
@@ -42,7 +41,13 @@ public class RestaurantAdapter extends ListAdapter<Restaurant, RestaurantAdapter
 
     @Override
     public void onBindViewHolder(@NonNull RestaurantViewHolder holder, int position) {
-        holder.bind(getItem(position));
+        Restaurant restaurant = getItem(position);
+        holder.bind(restaurant);
+        holder.itemView.setOnClickListener(v -> {
+            if (listener != null) {
+                listener.onRestaurantClick(restaurant);
+            }
+        });
     }
 
     static class RestaurantViewHolder extends RecyclerView.ViewHolder {
@@ -58,11 +63,24 @@ public class RestaurantAdapter extends ListAdapter<Restaurant, RestaurantAdapter
             binding.tvRestaurantAddress.setText(restaurant.getAddress());
             binding.tvRestaurantRating.setText(String.valueOf(restaurant.getRating()));
 
-            // Dùng Glide hoặc Picasso để tải ảnh
-            // Glide.with(binding.ivRestaurantImage.getContext())
-            //         .load(restaurant.getImageUrl())
-            //         .placeholder(R.drawable.ic_placeholder_image)
-            //         .into(binding.ivRestaurantImage);
+            // Dùng ImageUtil để tải ảnh
+            ImageUtil.loadImage(
+                    binding.ivRestaurantImage.getContext(),
+                    restaurant.getImageUrl(),
+                    binding.ivRestaurantImage
+            );
         }
     }
+
+    private static final DiffUtil.ItemCallback<Restaurant> DIFF_CALLBACK = new DiffUtil.ItemCallback<Restaurant>() {
+        @Override
+        public boolean areItemsTheSame(@NonNull Restaurant oldItem, @NonNull Restaurant newItem) {
+            return oldItem.getId().equals(newItem.getId());
+        }
+
+        @Override
+        public boolean areContentsTheSame(@NonNull Restaurant oldItem, @NonNull Restaurant newItem) {
+            return oldItem.equals(newItem);
+        }
+    };
 }
