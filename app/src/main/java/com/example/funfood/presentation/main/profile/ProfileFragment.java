@@ -7,45 +7,74 @@ import android.view.View;
 import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
-// Giả sử bạn đang dùng ViewBinding và tệp layout của bạn là fragment_profile.xml
+
 import com.example.funfood.databinding.FragmentProfileBinding;
-import com.example.funfood.data.preferences.UserPreferences; // Import lớp UserPreferences
+import com.example.funfood.data.preferences.UserPreferences;
+import com.example.funfood.presentation.base.BaseFragment;
+import com.example.funfood.presentation.profile.ChangePasswordActivity;
 
-public class ProfileFragment extends Fragment {
 
-    private FragmentProfileBinding binding;
+public class ProfileFragment extends BaseFragment<FragmentProfileBinding> {
+
     private ProfileViewModel viewModel;
-    private UserPreferences userPreferences; // Thêm UserPreferences
+    private UserPreferences userPreferences;
 
-    @Nullable
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        // Sử dụng ViewBinding để inflate layout
-        binding = FragmentProfileBinding.inflate(inflater, container, false);
-        return binding.getRoot();
+    protected FragmentProfileBinding getViewBinding(LayoutInflater inflater, ViewGroup container) {
+        return FragmentProfileBinding.inflate(inflater, container, false);
     }
-
     @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
+    protected void setupViews() {
 
-        // Khởi tạo UserPreferences
         userPreferences = UserPreferences.getInstance(requireContext());
 
-        // Khởi tạo ViewModel
+
         viewModel = new ViewModelProvider(this).get(ProfileViewModel.class);
 
-        // Lấy thông tin người dùng từ SharedPreferences và hiển thị
-        // Đây là lý do tại sao ProfileViewModel cần UserPreferences
         loadUserProfile();
 
-        // (Thêm logic cho các nút bấm, ví dụ: nút Đăng xuất)
         binding.buttonLogout.setOnClickListener(v -> {
             userPreferences.logout();
             // (Thêm logic chuyển về màn hình Login)
+            showToast("Đã đăng xuất");
         });
+
+        // Gán sự kiện click cho nút Sửa Profile
+        binding.ivEditProfile.setOnClickListener(v -> {
+            navigateToEditProfile();
+        });
+
+        // Gán sự kiện click cho mục Đổi mật khẩu
+        binding.layoutChangePassword.setOnClickListener(v -> {
+            Intent intent = new Intent(requireContext(), ChangePasswordActivity.class);
+            startActivity(intent);
+        });
+
+        // Gán sự kiện click cho các mục khác
+        binding.layoutNotifications.setOnClickListener(v -> {
+            Intent intent = new Intent(requireContext(), com.example.funfood.presentation.notification.NotificationActivity.class);
+            startActivity(intent);
+        });
+
+        binding.layoutAddresses.setOnClickListener(v -> {
+            Intent intent = new Intent(requireContext(), com.example.funfood.presentation.address.AddressListActivity.class);
+            startActivity(intent);
+        });
+
+        // Các mục chưa có chức năng
+        binding.layoutMyOrders.setOnClickListener(v -> showToast("Chức năng 'Đơn hàng' đang được phát triển!"));
+        binding.layoutFavorites.setOnClickListener(v -> showToast("Chức năng 'Yêu thích' đang được phát triển!"));
+        binding.layoutLanguage.setOnClickListener(v -> showToast("Chức năng 'Ngôn ngữ' đang được phát triển!"));
+        binding.layoutHelp.setOnClickListener(v -> showToast("Chức năng 'Hỗ trợ' đang được phát triển!"));
+        binding.layoutAbout.setOnClickListener(v -> showToast("Chức năng 'Về FunFood' đang được phát triển!"));
+    }
+
+    // Cung cấp phương thức observeData (hiện tại chưa làm gì)
+    @Override
+    protected void observeData() {
+        // TODO: Thêm code lắng nghe LiveData từ ViewModel tại đây
+        // Ví dụ: viewModel.getUserLiveData().observe(getViewLifecycleOwner(), user -> { ... });
     }
 
     private void loadUserProfile() {
@@ -53,17 +82,11 @@ public class ProfileFragment extends Fragment {
         String name = userPreferences.getUserName();
         String email = userPreferences.getUserEmail();
 
-        // Hiển thị lên TextView (giả sử bạn có tvName và tvEmail trong fragment_profile.xml)
-        binding.tvName.setText(name);
-        binding.tvEmail.setText(email);
+        // Hiển thị lên TextView
+        if (name != null) binding.tvName.setText(name);
+        if (email != null) binding.tvEmail.setText(email);
 
         // (Bạn cũng có thể di chuyển logic này vào ViewModel nếu muốn)
-    }
-
-    @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-        binding = null; // Tránh rò rỉ bộ nhớ
     }
 
     private void navigateToEditProfile() {
@@ -73,4 +96,16 @@ public class ProfileFragment extends Fragment {
     }
 
     private static final int REQUEST_EDIT_PROFILE = 1001;
+
+    // Bạn có thể cần thêm phương thức onActivityResult để cập nhật lại thông tin
+    // sau khi người dùng sửa profile thành công
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == REQUEST_EDIT_PROFILE && resultCode == android.app.Activity.RESULT_OK) {
+            // Khi quay lại từ màn hình EditProfile, tải lại thông tin
+            showToast("Cập nhật thông tin thành công!");
+            loadUserProfile();
+        }
+    }
 }
