@@ -72,6 +72,11 @@
             android:windowSoftInputMode="adjustResize"
             android:theme="@style/Theme.FunFood" />
 
+        <activity
+            android:name=".presentation.address.AddressListActivity"
+            android:exported="false"
+            android:theme="@style/Theme.FunFood" />
+
     </application>
 
 </manifest>
