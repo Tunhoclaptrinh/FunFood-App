@@ -15,8 +15,10 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager2.widget.CompositePageTransformer;
 import androidx.viewpager2.widget.MarginPageTransformer;
 
+import com.example.funfood.R; // Thêm import R
 import com.example.funfood.databinding.FragmentHomeBinding;
 import com.example.funfood.domain.model.Category;
+import com.example.funfood.domain.model.Promotion; // Thêm import Promotion
 import com.example.funfood.domain.model.Restaurant;
 import com.example.funfood.presentation.base.BaseFragment;
 import com.example.funfood.presentation.main.home.adapter.CategoryAdapter;
@@ -26,6 +28,7 @@ import com.example.funfood.presentation.product.ProductSearchActivity;
 import com.example.funfood.presentation.restaurant.detail.RestaurantDetailActivity;
 import com.example.funfood.presentation.restaurant.list.RestaurantListActivity;
 import com.example.funfood.util.AppConfig;
+import com.example.funfood.util.Constants; // Sửa AppConfig thành Constants
 import com.example.funfood.util.Resource;
 
 public class HomeFragment extends BaseFragment<FragmentHomeBinding>
@@ -51,7 +54,8 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding>
 
     @Override
     protected void setupViews() {
-        binding.tvHomeTitle.setText(getString(com.example.funfood.R.string.nav_home));
+        // Sử dụng R.string.nav_home thay vì getString(com.example.funfood.R.string.nav_home)
+        binding.tvHomeTitle.setText(R.string.nav_home);
 
         // Setup Category RecyclerView
         categoryAdapter = new CategoryAdapter();
@@ -96,44 +100,7 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding>
         binding.viewPagerPromotions.setPageTransformer(compositePageTransformer);
     }
 
-    @Override
-    protected void observeData() {
-        // Observe Categories
-        viewModel.categories.observe(getViewLifecycleOwner(), categories -> {
-            if (categories != null) {
-                categoryAdapter.submitList(categories);
-            }
-        });
-
-        // Observe Restaurants
-        viewModel.restaurants.observe(getViewLifecycleOwner(), restaurants -> {
-            if (restaurants != null) {
-                restaurantAdapter.submitList(restaurants);
-            }
-        });
-
-        // Observe Promotions
-        viewModel.promotions.observe(getViewLifecycleOwner(), promotions -> {
-            if (promotions != null) {
-                promotionAdapter.submitList(promotions);
-            }
-        });
-    }
-
-    @Override
-    public void onCategoryClick(Category category) {
-        Intent intent = new Intent(getActivity(), RestaurantListActivity.class);
-        intent.putExtra(AppConfig.EXTRA_CATEGORY_ID, category.getId());
-        startActivity(intent);
-    }
-
-    @Override
-    public void onRestaurantClick(Restaurant restaurant) {
-        Intent intent = new Intent(getActivity(), RestaurantDetailActivity.class);
-        intent.putExtra(AppConfig.EXTRA_RESTAURANT_ID, restaurant.getId());
-        startActivity(intent);
-    }
-
+    // Chỉ giữ lại phương thức observeData() đúng (phiên bản sử dụng Resource)
     @Override
     protected void observeData() {
         // Observe Categories
@@ -174,5 +141,21 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding>
                 showToast("Lỗi tải khuyến mãi: " + resource.getMessage());
             }
         });
+    }
+
+    @Override
+    public void onCategoryClick(Category category) {
+        Intent intent = new Intent(getActivity(), RestaurantListActivity.class);
+        // Sử dụng Constants.KEY_CATEGORY_ID thay vì AppConfig
+        intent.putExtra(Constants.KEY_CATEGORY_ID, category.getId());
+        startActivity(intent);
+    }
+
+    @Override
+    public void onRestaurantClick(Restaurant restaurant) {
+        Intent intent = new Intent(getActivity(), RestaurantDetailActivity.class);
+        // Sử dụng Constants.KEY_RESTAURANT_ID thay vì AppConfig
+        intent.putExtra(Constants.KEY_RESTAURANT_ID, restaurant.getId());
+        startActivity(intent);
     }
 }

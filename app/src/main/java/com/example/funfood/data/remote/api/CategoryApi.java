@@ -1,7 +1,7 @@
 package com.example.funfood.data.remote.api;
 
 import com.example.funfood.data.remote.dto.ApiResponse;
-import com.example.funfood.data.remote.dto.response.CategoryResponse; // Giả sử bạn có DTO này
+import com.example.funfood.data.remote.dto.response.CategoryResponse;
 import java.util.List;
 import retrofit2.Call;
 import retrofit2.http.GET;

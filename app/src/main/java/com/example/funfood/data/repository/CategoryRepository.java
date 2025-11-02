@@ -6,7 +6,8 @@ import androidx.lifecycle.MutableLiveData;
 import com.example.funfood.data.remote.RetrofitClient;
 import com.example.funfood.data.remote.api.CategoryApi;
 import com.example.funfood.data.remote.dto.ApiResponse;
-import com.example.funfood.domain.model.Category; // Dùng model
+import com.example.funfood.data.remote.dto.response.CategoryResponse;
+import com.example.funfood.domain.model.Category;
 import com.example.funfood.util.Resource;
 import java.util.ArrayList;
 import java.util.List;
@@ -22,7 +23,6 @@ public class CategoryRepository {
         this.categoryApi = RetrofitClient.getInstance(context).createService(CategoryApi.class);
     }
 
-    // Hàm giả lập chuyển đổi DTO -> Model
     private Category convertDtoToModel(CategoryResponse dto) {
         return new Category(String.valueOf(dto.getId()), dto.getName(), dto.getImage());
     }
@@ -36,8 +36,11 @@ public class CategoryRepository {
             public void onResponse(Call<ApiResponse<List<CategoryResponse>>> call, Response<ApiResponse<List<CategoryResponse>>> response) {
                 if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
                     List<Category> modelList = new ArrayList<>();
-                    for (CategoryResponse dto : response.body().getData()) {
-                        modelList.add(convertDtoToModel(dto)); // Cần hàm convert
+                    // Kiểm tra null cho getData()
+                    if (response.body().getData() != null) {
+                        for (CategoryResponse dto : response.body().getData()) {
+                            modelList.add(convertDtoToModel(dto));
+                        }
                     }
                     data.setValue(Resource.success(modelList));
                 } else {
@@ -53,13 +56,4 @@ public class CategoryRepository {
         return data;
     }
 
-    // Cần 1 DTO CategoryResponse.java
-    static class CategoryResponse {
-        private int id;
-        private String name;
-        private String image;
-        public int getId() { return id; }
-        public String getName() { return name; }
-        public String getImage() { return image; }
-    }
 }
