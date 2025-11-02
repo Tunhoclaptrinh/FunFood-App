@@ -48,6 +48,19 @@
             android:name=".presentation.main.MainActivity"
             android:exported="false" />
 
+        <!-- Restaurant Detail Activity -->
+        <activity
+            android:name=".presentation.restaurant.detail.RestaurantDetailActivity"
+            android:exported="false"
+            android:theme="@style/Theme.FunFood" />
+
+        <!-- Product Detail Activity -->
+        <activity
+            android:name=".presentation.product.ProductDetailActivity"
+            android:exported="false"
+            android:theme="@style/Theme.FunFood" />
+
+
         <!-- Notification Activity -->
         <activity
             android:name=".presentation.notification.NotificationActivity"
