@@ -5,6 +5,7 @@ import com.example.funfood.data.remote.dto.request.LoginRequest;
 import com.example.funfood.data.remote.dto.request.RegisterRequest;
 import com.example.funfood.data.remote.dto.response.LoginResponse;
 import com.example.funfood.data.remote.dto.response.UserResponse;
+import com.example.funfood.data.repository.AuthRepository;
 
 import retrofit2.Call;
 import retrofit2.http.Body;
@@ -22,6 +23,9 @@ public interface AuthApi {
 
     @GET("auth/me")
     Call<ApiResponse<UserResponse>> getProfile();
+
+    @PUT("users/profile")
+    Call<ApiResponse<UserResponse>> updateProfile(@Body AuthRepository.UpdateProfileRequest request);
 
     @POST("auth/logout")
     Call<ApiResponse<Void>> logout();
