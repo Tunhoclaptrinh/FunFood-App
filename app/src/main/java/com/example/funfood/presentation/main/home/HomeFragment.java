@@ -26,6 +26,7 @@ import com.example.funfood.presentation.product.ProductSearchActivity;
 import com.example.funfood.presentation.restaurant.detail.RestaurantDetailActivity;
 import com.example.funfood.presentation.restaurant.list.RestaurantListActivity;
 import com.example.funfood.util.AppConfig;
+import com.example.funfood.util.Resource;
 
 public class HomeFragment extends BaseFragment<FragmentHomeBinding>
         implements CategoryAdapter.OnCategoryClickListener, RestaurantAdapter.OnRestaurantClickListener {
@@ -131,5 +132,47 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding>
         Intent intent = new Intent(getActivity(), RestaurantDetailActivity.class);
         intent.putExtra(AppConfig.EXTRA_RESTAURANT_ID, restaurant.getId());
         startActivity(intent);
+    }
+
+    @Override
+    protected void observeData() {
+        // Observe Categories
+        viewModel.categories.observe(getViewLifecycleOwner(), resource -> {
+            if (resource == null) return;
+            // TODO: Thêm xử lý Loading/Error (hiện/ẩn ProgressBar)
+            // binding.progressBarCategories.setVisibility(resource.isLoading() ? View.VISIBLE : View.GONE);
+
+            if (resource.getStatus() == Resource.Status.SUCCESS && resource.getData() != null) {
+                categoryAdapter.submitList(resource.getData());
+            } else if (resource.getStatus() == Resource.Status.ERROR) {
+                showToast("Lỗi tải danh mục: " + resource.getMessage());
+            }
+        });
+
+        // Observe Restaurants
+        viewModel.restaurants.observe(getViewLifecycleOwner(), resource -> {
+            if (resource == null) return;
+            // TODO: Thêm xử lý Loading/Error
+            // binding.progressBarRestaurants.setVisibility(resource.isLoading() ? View.VISIBLE : View.GONE);
+
+            if (resource.getStatus() == Resource.Status.SUCCESS && resource.getData() != null) {
+                restaurantAdapter.submitList(resource.getData());
+            } else if (resource.getStatus() == Resource.Status.ERROR) {
+                showToast("Lỗi tải nhà hàng: " + resource.getMessage());
+            }
+        });
+
+        // Observe Promotions
+        viewModel.promotions.observe(getViewLifecycleOwner(), resource -> {
+            if (resource == null) return;
+            // TODO: Thêm xử lý Loading/Error
+            // binding.progressBarPromotions.setVisibility(resource.isLoading() ? View.VISIBLE : View.GONE);
+
+            if (resource.getStatus() == Resource.Status.SUCCESS && resource.getData() != null) {
+                promotionAdapter.submitList(resource.getData());
+            } else if (resource.getStatus() == Resource.Status.ERROR) {
+                showToast("Lỗi tải khuyến mãi: " + resource.getMessage());
+            }
+        });
     }
 }

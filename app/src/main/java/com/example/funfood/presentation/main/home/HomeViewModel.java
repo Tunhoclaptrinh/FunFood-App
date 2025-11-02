@@ -1,39 +1,40 @@
 package com.example.funfood.presentation.main.home;
 
+import android.app.Application;
+import androidx.annotation.NonNull;
+import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
-import androidx.lifecycle.MutableLiveData;
-import androidx.lifecycle.ViewModel;
-
+import androidx.lifecycle.MediatorLiveData;
 import com.example.funfood.domain.model.Category;
 import com.example.funfood.domain.model.Promotion;
 import com.example.funfood.domain.model.Restaurant;
-
-import java.util.Arrays;
+import com.example.funfood.data.repository.CategoryRepository;
+import com.example.funfood.data.repository.PromotionRepository;
+import com.example.funfood.data.repository.RestaurantRepository;
+import com.example.funfood.util.Resource;
 import java.util.List;
 
-public class HomeViewModel extends ViewModel {
+public class HomeViewModel extends AndroidViewModel {
 
-    // Giả sử bạn đã inject repositories
-    // private final CategoryRepository categoryRepository;
-    // private final PromotionRepository promotionRepository;
-    // private final RestaurantRepository restaurantRepository;
+    private final CategoryRepository categoryRepository;
+    private final PromotionRepository promotionRepository;
+    private final RestaurantRepository restaurantRepository;
 
-    private final MutableLiveData<List<Category>> _categories = new MutableLiveData<>();
-    public final LiveData<List<Category>> categories = _categories;
+    private final MediatorLiveData<Resource<List<Category>>> _categories = new MediatorLiveData<>();
+    public final LiveData<Resource<List<Category>>> categories = _categories;
 
-    private final MutableLiveData<List<Promotion>> _promotions = new MutableLiveData<>();
-    public final LiveData<List<Promotion>> promotions = _promotions;
+    private final MediatorLiveData<Resource<List<Promotion>>> _promotions = new MediatorLiveData<>();
+    public final LiveData<Resource<List<Promotion>>> promotions = _promotions;
 
-    private final MutableLiveData<List<Restaurant>> _restaurants = new MutableLiveData<>();
-    public final LiveData<List<Restaurant>> restaurants = _restaurants;
+    private final MediatorLiveData<Resource<List<Restaurant>>> _restaurants = new MediatorLiveData<>();
+    public final LiveData<Resource<List<Restaurant>>> restaurants = _restaurants;
 
-    // public HomeViewModel(CategoryRepository categoryRepository, ...) {
-    //     this.categoryRepository = categoryRepository;
-    //     ...
-    // }
+    public HomeViewModel(@NonNull Application application) {
+        super(application);
+        categoryRepository = new CategoryRepository(application);
+        promotionRepository = new PromotionRepository(application); // Cần tạo class này
+        restaurantRepository = new RestaurantRepository(application); // Cần tạo class này
 
-    public HomeViewModel() {
-        // Constructor (sẽ được thay thế bằng DI)
         fetchData();
     }
 
@@ -44,52 +45,25 @@ public class HomeViewModel extends ViewModel {
     }
 
     private void fetchCategories() {
-        // TODO: Gọi từ Repository
-        // Tạm thời dùng dữ liệu giả (mock data)
-        List<Category> mockCategories = Arrays.asList(
-                new Category("1", "Cơm", "url_to_image"),
-                new Category("2", "Phở", "url_to_image"),
-                new Category("3", "Bún", "url_to_image"),
-                new Category("4", "Đồ uống", "url_to_image"),
-                new Category("5", "Tráng miệng", "url_to_image")
-        );
-        _categories.setValue(mockCategories);
+        _categories.setValue(Resource.loading(null));
+        _categories.addSource(categoryRepository.getCategories(), resource -> {
+            _categories.setValue(resource);
+        });
     }
 
     private void fetchPromotions() {
-        // TODO: Gọi từ Repository
-        List<Promotion> mockPromotions = Arrays.asList(
-                new Promotion("p1", "url_promo_1", "Khuyến mãi 1"),
-                new Promotion("p2", "url_promo_2", "Khuyến mãi 2")
-        );
-        _promotions.setValue(mockPromotions);
+        _promotions.setValue(Resource.loading(null));
+        // Giả sử PromotionRepository có hàm getActivePromotions()
+        _promotions.addSource(promotionRepository.getActivePromotions(), resource -> {
+            _promotions.setValue(resource);
+        });
     }
 
     private void fetchRestaurants() {
-        // TODO: Gọi từ Repository
-        List<Restaurant> mockRestaurants = Arrays.asList(
-                new Restaurant("r1", "Nhà hàng Phở Thìn", "13 Lò Đúc, Hai Bà Trưng", 4.5, "url_img_1", 10.0),
-                new Restaurant("r2", "Bún chả Hàng Mành", "1 Hàng Mành, Hoàn Kiếm", 4.8, "url_img_2", 5.0),
-                new Restaurant("r3", "Cơm tấm Cali", "234 Nguyễn Thị Minh Khai, Q3", 4.2, "url_img_3", 2.5)
-        );
-        _restaurants.setValue(mockRestaurants);
+        _restaurants.setValue(Resource.loading(null));
+        // Giả sử RestaurantRepository có hàm getRestaurants()
+        _restaurants.addSource(restaurantRepository.getRestaurants(1, 10, null, true, 4.0, null), resource -> {
+            _restaurants.setValue(resource);
+        });
     }
-
-    // Giả lập models (Bạn nên dùng file model thật từ domain.model)
-    // Các class này nên nằm ở file riêng trong domain/model/
-    // public class Category {
-    //     String id, name, imageUrl;
-    //     public Category(String id, String name, String imageUrl) { /*...*/ }
-    // }
-    // public class Promotion {
-    //     String id, imageUrl, description;
-    //     public Promotion(String id, String imageUrl, String description) { /*...*/ }
-    // }
-    // public class Restaurant {
-    //     String id, name, address;
-    //     double rating;
-    //     String imageUrl;
-    //     double distance; // Thêm khoảng cách
-    //     public Restaurant(String id, String name, String address, double rating, String imageUrl, double distance) { /*...*/ }
-    // }
 }
