@@ -55,9 +55,9 @@
             android:theme="@style/Theme.FunFood" />
 
         <!-- Google Maps API Key -->
-        <meta-data
-            android:name="com.google.android.geo.API_KEY"
-            android:value="YOUR_GOOGLE_MAPS_API_KEY" />
+<!--        <meta-data-->
+<!--            android:name="com.google.android.geo.API_KEY"-->
+<!--            android:value="YOUR_GOOGLE_MAPS_API_KEY" />-->
 
         <!-- Profile Activities -->
         <activity
@@ -74,6 +74,21 @@
 
         <activity
             android:name=".presentation.address.AddressListActivity"
+            android:exported="false"
+            android:theme="@style/Theme.FunFood" />
+
+        <activity
+            android:name=".presentation.product.ProductSearchActivity"
+            android:exported="false"
+            android:theme="@style/Theme.FunFood" />
+
+        <activity
+            android:name=".presentation.restaurant.list.RestaurantListActivity"
+            android:exported="false"
+            android:theme="@style/Theme.FunFood" />
+
+        <activity
+            android:name=".presentation.restaurant.detail.RestaurantDetailActivity"
             android:exported="false"
             android:theme="@style/Theme.FunFood" />
 
