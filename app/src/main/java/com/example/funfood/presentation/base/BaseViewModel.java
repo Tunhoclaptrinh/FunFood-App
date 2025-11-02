@@ -1,15 +1,18 @@
 package com.example.funfood.presentation.base;
 
 import androidx.lifecycle.MutableLiveData;
-import androidx.lifecycle.ViewModel;
+import android.app.Application;
+import androidx.annotation.NonNull;
+import androidx.lifecycle.AndroidViewModel;
 
-public class BaseViewModel extends ViewModel {
+public class BaseViewModel extends AndroidViewModel {
 
     protected final MutableLiveData<Boolean> isLoading = new MutableLiveData<>();
     protected final MutableLiveData<String> errorMessage = new MutableLiveData<>();
     protected final MutableLiveData<String> successMessage = new MutableLiveData<>();
 
-    public BaseViewModel() {
+    public BaseViewModel(@NonNull Application application) {
+        super(application);
         isLoading.setValue(false);
     }
 

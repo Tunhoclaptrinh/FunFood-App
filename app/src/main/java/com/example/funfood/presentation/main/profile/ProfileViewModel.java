@@ -21,7 +21,7 @@ public class ProfileViewModel extends BaseViewModel {
     private final MutableLiveData<SingleEvent<Boolean>> logoutEvent = new MutableLiveData<>();
 
     public ProfileViewModel(@NonNull Application application) {
-        super();
+        super(application);
         userPreferences = UserPreferences.getInstance(application.getApplicationContext());
         authRepository = new AuthRepository(application.getApplicationContext());
         loadUser();
