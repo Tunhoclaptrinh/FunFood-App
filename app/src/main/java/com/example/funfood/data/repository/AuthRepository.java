@@ -184,4 +184,100 @@ public class AuthRepository {
     public boolean isLoggedIn() {
         return userPreferences.isLoggedIn();
     }
+
+    /**
+     * Update user profile
+     */
+    public LiveData<Resource<User>> updateProfile(String name, String phone, String address, String avatar) {
+        MutableLiveData<Resource<User>> result = new MutableLiveData<>();
+        result.setValue(Resource.loading(null));
+
+        UpdateProfileRequest request = new UpdateProfileRequest(name, phone, address, avatar);
+
+        authApi.updateProfile(request).enqueue(new Callback<ApiResponse<UserResponse>>() {
+            @Override
+            public void onResponse(Call<ApiResponse<UserResponse>> call,
+                                   Response<ApiResponse<UserResponse>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    ApiResponse<UserResponse> apiResponse = response.body();
+
+                    if (apiResponse.isSuccess() && apiResponse.getData() != null) {
+                        User user = convertToUser(apiResponse.getData());
+                        result.setValue(Resource.success(user));
+                    } else {
+                        result.setValue(Resource.error(apiResponse.getMessage(), null));
+                    }
+                } else {
+                    result.setValue(Resource.error("Failed to update profile", null));
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ApiResponse<UserResponse>> call, Throwable t) {
+                result.setValue(Resource.error(t.getMessage(), null));
+            }
+        });
+
+        return result;
+    }
+
+    /**
+     * Change password
+     */
+    public LiveData<Resource<Void>> changePassword(String currentPassword, String newPassword) {
+        MutableLiveData<Resource<Void>> result = new MutableLiveData<>();
+        result.setValue(Resource.loading(null));
+
+        AuthApi.ChangePasswordRequest request = new AuthApi.ChangePasswordRequest(currentPassword, newPassword);
+
+        authApi.changePassword(request).enqueue(new Callback<ApiResponse<Void>>() {
+            @Override
+            public void onResponse(Call<ApiResponse<Void>> call,
+                                   Response<ApiResponse<Void>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    ApiResponse<Void> apiResponse = response.body();
+
+                    if (apiResponse.isSuccess()) {
+                        result.setValue(Resource.success(null));
+                    } else {
+                        result.setValue(Resource.error(apiResponse.getMessage(), null));
+                    }
+                } else {
+                    result.setValue(Resource.error("Failed to change password", null));
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ApiResponse<Void>> call, Throwable t) {
+                result.setValue(Resource.error(t.getMessage(), null));
+            }
+        });
+
+        return result;
+    }
+
+    // Request class for update profile
+    public static class UpdateProfileRequest {
+        private String name;
+        private String phone;
+        private String address;
+        private String avatar;
+
+        public UpdateProfileRequest(String name, String phone, String address, String avatar) {
+            this.name = name;
+            this.phone = phone;
+            this.address = address;
+            this.avatar = avatar;
+        }
+
+        // Getters and Setters
+        public String getName() { return name; }
+        public void setName(String name) { this.name = name; }
+        public String getPhone() { return phone; }
+        public void setPhone(String phone) { this.phone = phone; }
+        public String getAddress() { return address; }
+        public void setAddress(String address) { this.address = address; }
+        public String getAvatar() { return avatar; }
+        public void setAvatar(String avatar) { this.avatar = avatar; }
+    }
 }

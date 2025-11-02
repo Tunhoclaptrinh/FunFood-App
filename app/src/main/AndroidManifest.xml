@@ -59,6 +59,24 @@
             android:name="com.google.android.geo.API_KEY"
             android:value="YOUR_GOOGLE_MAPS_API_KEY" />
 
+        <!-- Profile Activities -->
+        <activity
+            android:name=".presentation.profile.EditProfileActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize"
+            android:theme="@style/Theme.FunFood" />
+
+        <activity
+            android:name=".presentation.profile.ChangePasswordActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize"
+            android:theme="@style/Theme.FunFood" />
+
+        <activity
+            android:name=".presentation.address.AddressListActivity"
+            android:exported="false"
+            android:theme="@style/Theme.FunFood" />
+
     </application>
 
 </manifest>
