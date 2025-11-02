@@ -3,7 +3,7 @@ package com.example.funfood.util;
 public class Constants {
 
     // API
-    public static final String BASE_URL = "http://10.0.2.2:3000/api/";
+    public static final String BASE_URL = "https://funfood-backend-67v4.onrender.com/api/";
 
     // SharedPreferences
     public static final String PREF_NAME = "FunFoodPrefs";
