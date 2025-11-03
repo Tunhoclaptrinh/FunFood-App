@@ -60,6 +60,16 @@
             android:exported="false"
             android:theme="@style/Theme.FunFood" />
 
+        <activity
+            android:name=".presentation.product.list.ProductListActivity"
+            android:exported="false"
+            android:theme="@style/Theme.FunFood" />
+
+<!--        <activity-->
+<!--            android:name=".presentation.restaurant.list.RestaurantListActivity"-->
+<!--            android:exported="false"-->
+<!--            android:theme="@style/Theme.FunFood" />-->
+
 
         <!-- Notification Activity -->
         <activity
@@ -76,14 +86,14 @@
         <activity
             android:name=".presentation.profile.EditProfileActivity"
             android:exported="false"
-            android:windowSoftInputMode="adjustResize"
-            android:theme="@style/Theme.FunFood" />
+            android:theme="@style/Theme.FunFood"
+            android:windowSoftInputMode="adjustResize" />
 
         <activity
             android:name=".presentation.profile.ChangePasswordActivity"
             android:exported="false"
-            android:windowSoftInputMode="adjustResize"
-            android:theme="@style/Theme.FunFood" />
+            android:theme="@style/Theme.FunFood"
+            android:windowSoftInputMode="adjustResize" />
 
         <activity
             android:name=".presentation.address.AddressListActivity"

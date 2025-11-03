@@ -22,7 +22,9 @@ import com.example.funfood.presentation.main.home.adapter.ProductAdapter;
 import com.example.funfood.presentation.main.home.adapter.PromotionAdapter;
 import com.example.funfood.presentation.main.home.adapter.RestaurantAdapter;
 import com.example.funfood.presentation.product.ProductDetailActivity;
+import com.example.funfood.presentation.product.list.ProductListActivity;
 import com.example.funfood.presentation.restaurant.detail.RestaurantDetailActivity;
+import com.example.funfood.presentation.restaurant.list.RestaurantListActivity;
 import com.example.funfood.util.Resource;
 
 public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
@@ -332,9 +334,12 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
 
         // Handle "View all" click
         binding.tvViewAllProducts.setOnClickListener(v -> {
-            showToast("Chức năng xem tất cả sản phẩm đang phát triển");
-            // TODO: Navigate to products list screen
+            startActivity(new Intent(getContext(), ProductListActivity.class));
         });
+
+//        binding.tvViewAllRestaurants.setOnClickListener(v -> {
+//            startActivity(new Intent(getContext(), RestaurantListActivity.class));
+//        });
     }
 
     private void observeFilters() {
