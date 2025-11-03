@@ -102,7 +102,7 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
         restaurantAdapter = new RestaurantAdapter();
         restaurantAdapter.setOnItemClickListener((restaurant, position) -> {
             Intent intent = new Intent(getContext(), RestaurantDetailActivity.class);
-            intent.putExtra("RESTAURANT_ID", restaurant.getId());
+            intent.putExtra(com.example.funfood.util.Constants.KEY_RESTAURANT_ID, restaurant.getId());
             startActivity(intent);
         });
 
@@ -135,7 +135,7 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
         productAdapter = new ProductAdapter();
         productAdapter.setOnItemClickListener((product, position) -> {
             Intent intent = new Intent(getContext(), ProductDetailActivity.class);
-            intent.putExtra("PRODUCT_ID", product.getId());
+            intent.putExtra(com.example.funfood.util.Constants.KEY_PRODUCT_ID, product.getId());
             startActivity(intent);
         });
 
