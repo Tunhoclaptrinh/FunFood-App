@@ -22,7 +22,7 @@ import com.example.funfood.presentation.main.home.adapter.ProductAdapter;
 import com.example.funfood.presentation.main.home.adapter.PromotionAdapter;
 import com.example.funfood.presentation.main.home.adapter.RestaurantAdapter;
 import com.example.funfood.presentation.product.ProductDetailActivity;
-import com.example.funfood.presentation.product.list.ProductListActivity;
+import com.example.funfood.presentation.product.ProductListActivity;
 import com.example.funfood.presentation.restaurant.detail.RestaurantDetailActivity;
 import com.example.funfood.presentation.restaurant.list.RestaurantListActivity;
 import com.example.funfood.util.Resource;
