@@ -581,7 +581,7 @@ Total: **80 endpoints** từ FunFood Backend
 - ✅ Addresses (8 endpoints)
 - ✅ Notifications (5 endpoints)
 
-**Xem chi tiết:** [API_ENDPOINTS.md](../funfood-backend/API_ENDPOINTS.md)
+**Xem chi tiết:** [API_ENDPOINTS.md](https://github.com/Tunhoclaptrinh/FunFood-Backend/blob/main/API_ENDPOINTS.md)
 
 ---
 
