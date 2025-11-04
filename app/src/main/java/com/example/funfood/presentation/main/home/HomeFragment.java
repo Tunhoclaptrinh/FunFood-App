@@ -55,6 +55,7 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
         setupProductRecyclerView();
         setupSwipeRefresh();
         setupSearch();
+        setupViewAllButtons();
 
         // Load initial data
         loadInitialData();
@@ -332,15 +333,6 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
                     break;
             }
         });
-
-        // Handle "View all" click
-        binding.tvViewAllProducts.setOnClickListener(v -> {
-            startActivity(new Intent(getContext(), ProductListActivity.class));
-        });
-
-        binding.tvViewAllRestaurants.setOnClickListener(v -> {
-            startActivity(new Intent(getContext(), RestaurantListActivity.class));
-        });
     }
 
     private void observeFilters() {
@@ -406,9 +398,11 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
         if (restaurantAdapter.getItemCount() == 0) {
             binding.tvEmptyRestaurants.setVisibility(View.VISIBLE);
             binding.rvRestaurants.setVisibility(View.GONE);
+            binding.tvViewAllRestaurants.setVisibility(View.GONE);
         } else {
             binding.tvEmptyRestaurants.setVisibility(View.GONE);
             binding.rvRestaurants.setVisibility(View.VISIBLE);
+            binding.tvViewAllRestaurants.setVisibility(View.VISIBLE);
         }
     }
 
