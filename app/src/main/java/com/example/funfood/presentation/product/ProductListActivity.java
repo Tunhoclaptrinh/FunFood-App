@@ -19,7 +19,8 @@ public class ProductListActivity extends BaseActivity<ActivityProductListBinding
     private ProductAdapter productAdapter;
     private boolean isLoadingMore = false;
     private int categoryId = -1;
-    private String categoryName = "";
+    private int restaurantId = -1;
+    private String title = "";
 
     @Override
     protected ActivityProductListBinding getViewBinding() {
@@ -28,39 +29,115 @@ public class ProductListActivity extends BaseActivity<ActivityProductListBinding
 
     @Override
     protected void setupViews() {
-        // Get category info from intent
+        // Get filter info from intent (optional)
         categoryId = getIntent().getIntExtra(Constants.KEY_CATEGORY_ID, -1);
-        categoryName = getIntent().getStringExtra("category_name");
+        restaurantId = getIntent().getIntExtra(Constants.KEY_RESTAURANT_ID, -1);
+        title = getIntent().getStringExtra("title");
 
         viewModel = new ViewModelProvider(this).get(ProductListViewModel.class);
 
         // Setup toolbar
-        setSupportActionBar(binding.toolbar);
-        if (getSupportActionBar() != null) {
-            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-            getSupportActionBar().setDisplayShowHomeEnabled(true);
-
-            if (categoryId > 0 && categoryName != null && !categoryName.isEmpty()) {
-                getSupportActionBar().setTitle(categoryName);
-            } else {
-                getSupportActionBar().setTitle("Tất cả sản phẩm");
-            }
-        }
-        binding.toolbar.setNavigationOnClickListener(v -> finish());
+        setupToolbar();
 
         // Setup RecyclerView
         setupRecyclerView();
 
         // Setup SwipeRefresh
-        binding.swipeRefresh.setOnRefreshListener(() -> {
-            viewModel.refreshProducts(categoryId);
+        setupSwipeRefresh();
+
+        // Load initial data
+        loadData();
+    }
+
+    private void setupToolbar() {
+        setSupportActionBar(binding.toolbar);
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+            getSupportActionBar().setDisplayShowHomeEnabled(true);
+
+            // Set title
+            if (title != null && !title.isEmpty()) {
+                getSupportActionBar().setTitle(title);
+            } else if (categoryId > 0) {
+                getSupportActionBar().setTitle("Sản phẩm theo danh mục");
+            } else if (restaurantId > 0) {
+                getSupportActionBar().setTitle("Thực đơn");
+            } else {
+                getSupportActionBar().setTitle("Tất cả sản phẩm");
+            }
+        }
+        binding.toolbar.setNavigationOnClickListener(v -> finish());
+    }
+
+    private void setupRecyclerView() {
+        productAdapter = new ProductAdapter();
+        productAdapter.setOnItemClickListener((product, position) -> {
+            Intent intent = new Intent(this, ProductDetailActivity.class);
+            intent.putExtra(Constants.KEY_PRODUCT_ID, product.getId());
+            startActivity(intent);
         });
 
-        // Load data
-        if (categoryId > 0) {
+        GridLayoutManager layoutManager = new GridLayoutManager(this, 2);
+        binding.rvProducts.setLayoutManager(layoutManager);
+        binding.rvProducts.setAdapter(productAdapter);
+
+        // Setup infinite scroll
+        binding.rvProducts.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+                super.onScrolled(recyclerView, dx, dy);
+
+                // Check if scrolling down
+                if (dy <= 0) return;
+
+                int visibleItemCount = layoutManager.getChildCount();
+                int totalItemCount = layoutManager.getItemCount();
+                int firstVisibleItemPosition = layoutManager.findFirstVisibleItemPosition();
+
+                // Load more when reaching near bottom
+                if (!isLoadingMore && viewModel.canLoadMore()) {
+                    if ((visibleItemCount + firstVisibleItemPosition) >= totalItemCount - 3
+                            && firstVisibleItemPosition >= 0) {
+                        loadMoreProducts();
+                    }
+                }
+            }
+        });
+    }
+
+    private void setupSwipeRefresh() {
+        binding.swipeRefresh.setOnRefreshListener(() -> {
+            refreshData();
+        });
+    }
+
+    private void loadData() {
+        if (restaurantId > 0) {
+            // Load products by restaurant
+            viewModel.loadProductsByRestaurant(restaurantId, 1);
+        } else if (categoryId > 0) {
+            // Load products by category
             viewModel.loadProductsByCategory(categoryId, 1);
         } else {
+            // Load all products
             viewModel.loadProducts(1);
+        }
+    }
+
+    private void refreshData() {
+        if (restaurantId > 0) {
+            viewModel.refreshProductsByRestaurant(restaurantId);
+        } else if (categoryId > 0) {
+            viewModel.refreshProductsByCategory(categoryId);
+        } else {
+            viewModel.refreshProducts(-1);
+        }
+    }
+
+    private void loadMoreProducts() {
+        if (!isLoadingMore && viewModel.canLoadMore()) {
+            isLoadingMore = true;
+            viewModel.loadMoreProducts();
         }
     }
 
@@ -89,8 +166,10 @@ public class ProductListActivity extends BaseActivity<ActivityProductListBinding
 
                     if (resource.getData() != null) {
                         if (viewModel.getCurrentPage() == 1) {
+                            // First page - replace all
                             productAdapter.setItems(resource.getData());
                         } else {
+                            // Next pages - append
                             productAdapter.addItems(resource.getData());
                         }
 
@@ -103,10 +182,13 @@ public class ProductListActivity extends BaseActivity<ActivityProductListBinding
                     binding.progressLoadMore.setVisibility(View.GONE);
 
                     if (viewModel.getCurrentPage() == 1) {
-                        binding.tvEmpty.setText(resource.getMessage());
+                        // Error on first page
+                        binding.tvEmpty.setText(resource.getMessage() != null ?
+                                resource.getMessage() : "Không thể tải danh sách sản phẩm");
                         binding.tvEmpty.setVisibility(View.VISIBLE);
                         binding.rvProducts.setVisibility(View.GONE);
                     } else {
+                        // Error on next pages
                         showToast("Không thể tải thêm");
                     }
                     break;
@@ -114,51 +196,18 @@ public class ProductListActivity extends BaseActivity<ActivityProductListBinding
         });
     }
 
-    private void setupRecyclerView() {
-        productAdapter = new ProductAdapter();
-        productAdapter.setOnItemClickListener((product, position) -> {
-            Intent intent = new Intent(this, ProductDetailActivity.class);
-            intent.putExtra(Constants.KEY_PRODUCT_ID, product.getId());
-            startActivity(intent);
-        });
-
-        GridLayoutManager layoutManager = new GridLayoutManager(this, 2);
-        binding.rvProducts.setLayoutManager(layoutManager);
-        binding.rvProducts.setAdapter(productAdapter);
-
-        // Infinite scroll
-        binding.rvProducts.addOnScrollListener(new RecyclerView.OnScrollListener() {
-            @Override
-            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
-                super.onScrolled(recyclerView, dx, dy);
-
-                int visibleItemCount = layoutManager.getChildCount();
-                int totalItemCount = layoutManager.getItemCount();
-                int firstVisibleItemPosition = layoutManager.findFirstVisibleItemPosition();
-
-                if (!isLoadingMore && viewModel.canLoadMore()) {
-                    if ((visibleItemCount + firstVisibleItemPosition) >= totalItemCount
-                            && firstVisibleItemPosition >= 0
-                            && totalItemCount >= 10) {
-                        loadMoreProducts();
-                    }
-                }
-            }
-        });
-    }
-
-    private void loadMoreProducts() {
-        if (!isLoadingMore && viewModel.canLoadMore()) {
-            isLoadingMore = true;
-            viewModel.loadMoreProducts();
-        }
-    }
-
     private void updateEmptyState() {
         if (productAdapter.getItemCount() == 0) {
             binding.tvEmpty.setVisibility(View.VISIBLE);
             binding.rvProducts.setVisibility(View.GONE);
-            binding.tvEmpty.setText("Chưa có sản phẩm nào");
+
+            if (restaurantId > 0) {
+                binding.tvEmpty.setText("Nhà hàng chưa có sản phẩm nào");
+            } else if (categoryId > 0) {
+                binding.tvEmpty.setText("Chưa có sản phẩm nào trong danh mục này");
+            } else {
+                binding.tvEmpty.setText("Chưa có sản phẩm nào");
+            }
         } else {
             binding.tvEmpty.setVisibility(View.GONE);
             binding.rvProducts.setVisibility(View.VISIBLE);
