@@ -25,6 +25,7 @@ import com.example.funfood.presentation.product.ProductDetailActivity;
 import com.example.funfood.presentation.product.ProductListActivity;
 import com.example.funfood.presentation.restaurant.detail.RestaurantDetailActivity;
 import com.example.funfood.presentation.restaurant.list.RestaurantListActivity;
+import com.example.funfood.util.Constants;
 import com.example.funfood.util.Resource;
 
 public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
@@ -54,6 +55,7 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
         setupProductRecyclerView();
         setupSwipeRefresh();
         setupSearch();
+        setupViewAllButtons();
 
         // Load initial data
         loadInitialData();
@@ -331,15 +333,6 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
                     break;
             }
         });
-
-        // Handle "View all" click
-        binding.tvViewAllProducts.setOnClickListener(v -> {
-            startActivity(new Intent(getContext(), ProductListActivity.class));
-        });
-
-//        binding.tvViewAllRestaurants.setOnClickListener(v -> {
-//            startActivity(new Intent(getContext(), RestaurantListActivity.class));
-//        });
     }
 
     private void observeFilters() {
@@ -368,6 +361,16 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
     private void handleCategoryClick(Category category) {
         viewModel.filterByCategory(category.getId());
         showToast("Đang tải sản phẩm " + category.getName());
+
+        // Option 1: Navigate to product list filtered by category
+        Intent intent = new Intent(getContext(), ProductListActivity.class);
+        intent.putExtra(Constants.KEY_CATEGORY_ID, category.getId());
+        intent.putExtra("title", category.getName());
+        startActivity(intent);
+
+        // Option 2: Filter in current screen (existing behavior)
+        // viewModel.filterByCategory(category.getId());
+        // showToast("Đang tải sản phẩm " + category.getName());
     }
 
     private void loadMoreRestaurants() {
@@ -395,9 +398,11 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
         if (restaurantAdapter.getItemCount() == 0) {
             binding.tvEmptyRestaurants.setVisibility(View.VISIBLE);
             binding.rvRestaurants.setVisibility(View.GONE);
+            binding.tvViewAllRestaurants.setVisibility(View.GONE);
         } else {
             binding.tvEmptyRestaurants.setVisibility(View.GONE);
             binding.rvRestaurants.setVisibility(View.VISIBLE);
+            binding.tvViewAllRestaurants.setVisibility(View.VISIBLE);
         }
     }
 
@@ -427,4 +432,20 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
             searchHandler.removeCallbacks(searchRunnable);
         }
     }
+
+    private void setupViewAllButtons() {
+        // View all restaurants
+        binding.tvViewAllRestaurants.setOnClickListener(v -> {
+            Intent intent = new Intent(getContext(), RestaurantListActivity.class);
+            startActivity(intent);
+        });
+
+        // View all products
+        binding.tvViewAllProducts.setOnClickListener(v -> {
+            Intent intent = new Intent(getContext(), ProductListActivity.class);
+            intent.putExtra("title", "Tất cả sản phẩm");
+            startActivity(intent);
+        });
+    }
+
 }

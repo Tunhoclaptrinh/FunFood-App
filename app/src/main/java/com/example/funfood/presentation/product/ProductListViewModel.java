@@ -18,12 +18,15 @@ public class ProductListViewModel extends AndroidViewModel {
     private final ProductRepository productRepository;
     private final MutableLiveData<Resource<List<Product>>> productsLiveData = new MutableLiveData<>();
 
-    // Pagination
+    // Pagination state
     private int currentPage = 1;
     private boolean isLastPage = false;
     private boolean isLoading = false;
     private final int pageSize = 20;
+
+    // Filter state
     private int currentCategoryId = -1;
+    private int currentRestaurantId = -1;
 
     public ProductListViewModel(@NonNull Application application) {
         super(application);
@@ -48,6 +51,7 @@ public class ProductListViewModel extends AndroidViewModel {
 
         currentPage = page;
         currentCategoryId = -1;
+        currentRestaurantId = -1;
         isLoading = true;
 
         productRepository.getProducts(page, pageSize).observeForever(resource -> {
@@ -73,6 +77,7 @@ public class ProductListViewModel extends AndroidViewModel {
 
         currentPage = page;
         currentCategoryId = categoryId;
+        currentRestaurantId = -1;
         isLoading = true;
 
         // Load all products and filter by category
@@ -101,11 +106,41 @@ public class ProductListViewModel extends AndroidViewModel {
     }
 
     /**
-     * Load more products
+     * Load products by restaurant with pagination
+     */
+    public void loadProductsByRestaurant(int restaurantId, int page) {
+        if (isLoading || (isLastPage && page > 1)) {
+            return;
+        }
+
+        currentPage = page;
+        currentRestaurantId = restaurantId;
+        currentCategoryId = -1;
+        isLoading = true;
+
+        productRepository.getRestaurantProducts(restaurantId).observeForever(resource -> {
+            isLoading = false;
+
+            if (resource != null && resource.getStatus() == Resource.Status.SUCCESS) {
+                if (resource.getData() != null) {
+                    // For restaurant products, we get all at once, so mark as last page
+                    isLastPage = true;
+                }
+            }
+
+            productsLiveData.setValue(resource);
+        });
+    }
+
+    /**
+     * Load more products (for infinite scroll)
      */
     public void loadMoreProducts() {
         if (!isLastPage && !isLoading) {
-            if (currentCategoryId > 0) {
+            if (currentRestaurantId > 0) {
+                // Restaurant products loaded all at once, no more pages
+                return;
+            } else if (currentCategoryId > 0) {
                 loadProductsByCategory(currentCategoryId, currentPage + 1);
             } else {
                 loadProducts(currentPage + 1);
@@ -114,7 +149,7 @@ public class ProductListViewModel extends AndroidViewModel {
     }
 
     /**
-     * Refresh products
+     * Refresh products (reset to page 1)
      */
     public void refreshProducts(int categoryId) {
         currentPage = 1;
@@ -126,6 +161,26 @@ public class ProductListViewModel extends AndroidViewModel {
         } else {
             loadProducts(currentPage);
         }
+    }
+
+    /**
+     * Refresh products by category
+     */
+    public void refreshProductsByCategory(int categoryId) {
+        currentPage = 1;
+        isLastPage = false;
+        isLoading = false;
+        loadProductsByCategory(categoryId, currentPage);
+    }
+
+    /**
+     * Refresh products by restaurant
+     */
+    public void refreshProductsByRestaurant(int restaurantId) {
+        currentPage = 1;
+        isLastPage = false;
+        isLoading = false;
+        loadProductsByRestaurant(restaurantId, currentPage);
     }
 
     /**
