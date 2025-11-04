@@ -34,12 +34,12 @@
 
             <!-- RecyclerView -->
             <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/rv_restaurants"
+                android:id="@+id/rv_products"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:clipToPadding="false"
-                android:padding="16dp"
-                tools:listitem="@layout/item_restaurant" />
+                android:padding="8dp"
+                tools:listitem="@layout/item_product_grid" />
 
             <!-- Empty State -->
             <TextView
@@ -47,7 +47,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
-                android:text="Chưa có nhà hàng nào"
+                android:text="Chưa có sản phẩm nào"
                 android:textColor="@color/text_hint"
                 android:textSize="16sp"
                 android:visibility="gone"

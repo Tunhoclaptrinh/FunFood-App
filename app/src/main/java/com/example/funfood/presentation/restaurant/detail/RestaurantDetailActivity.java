@@ -1,5 +1,6 @@
 package com.example.funfood.presentation.restaurant.detail;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 
@@ -8,7 +9,9 @@ import androidx.recyclerview.widget.GridLayoutManager;
 
 import com.example.funfood.databinding.ActivityRestaurantDetailBinding;
 import com.example.funfood.presentation.base.BaseActivity;
+import com.example.funfood.presentation.product.ProductDetailActivity;
 import com.example.funfood.presentation.restaurant.detail.adapter.ProductAdapter;
+import com.example.funfood.util.Constants;
 import com.example.funfood.util.CurrencyUtil;
 import com.example.funfood.util.ImageUtil;
 
@@ -26,7 +29,7 @@ public class RestaurantDetailActivity extends BaseActivity<ActivityRestaurantDet
     @Override
     protected void setupViews() {
         // Get restaurant ID from intent
-        restaurantId = getIntent().getIntExtra("RESTAURANT_ID", -1);
+        restaurantId = getIntent().getIntExtra(com.example.funfood.util.Constants.KEY_RESTAURANT_ID, -1);
         if (restaurantId == -1) {
             showToast("Invalid restaurant");
             finish();
@@ -108,8 +111,10 @@ public class RestaurantDetailActivity extends BaseActivity<ActivityRestaurantDet
     private void setupProductsRecyclerView() {
         productAdapter = new ProductAdapter();
         productAdapter.setOnItemClickListener((product, position) -> {
-            // TODO: Show product detail dialog or navigate
-            showToast("Sản phẩm: " + product.getName());
+            // logic Intent để mở màn hình chi tiết
+            Intent intent = new Intent(this, ProductDetailActivity.class);
+            intent.putExtra(Constants.KEY_PRODUCT_ID, product.getId());
+            startActivity(intent);
         });
 
         binding.rvProducts.setLayoutManager(new GridLayoutManager(this, 2));

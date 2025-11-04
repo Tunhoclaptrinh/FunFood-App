@@ -1,30 +1,29 @@
-package com.example.funfood.presentation.restaurant.list;
+package com.example.funfood.presentation.product;
 
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 
 import androidx.lifecycle.ViewModelProvider;
-import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.funfood.databinding.ActivityRestaurantListBinding;
+import com.example.funfood.databinding.ActivityProductListBinding;
 import com.example.funfood.presentation.base.BaseActivity;
-import com.example.funfood.presentation.main.home.adapter.RestaurantAdapter;
-import com.example.funfood.presentation.restaurant.detail.RestaurantDetailActivity;
+import com.example.funfood.presentation.main.home.adapter.ProductAdapter;
 import com.example.funfood.util.Constants;
 
-public class RestaurantListActivity extends BaseActivity<ActivityRestaurantListBinding> {
+public class ProductListActivity extends BaseActivity<ActivityProductListBinding> {
 
-    private RestaurantListViewModel viewModel;
-    private RestaurantAdapter restaurantAdapter;
+    private ProductListViewModel viewModel;
+    private ProductAdapter productAdapter;
     private boolean isLoadingMore = false;
     private int categoryId = -1;
     private String categoryName = "";
 
     @Override
-    protected ActivityRestaurantListBinding getViewBinding() {
-        return ActivityRestaurantListBinding.inflate(getLayoutInflater());
+    protected ActivityProductListBinding getViewBinding() {
+        return ActivityProductListBinding.inflate(getLayoutInflater());
     }
 
     @Override
@@ -33,7 +32,7 @@ public class RestaurantListActivity extends BaseActivity<ActivityRestaurantListB
         categoryId = getIntent().getIntExtra(Constants.KEY_CATEGORY_ID, -1);
         categoryName = getIntent().getStringExtra("category_name");
 
-        viewModel = new ViewModelProvider(this).get(RestaurantListViewModel.class);
+        viewModel = new ViewModelProvider(this).get(ProductListViewModel.class);
 
         // Setup toolbar
         setSupportActionBar(binding.toolbar);
@@ -44,7 +43,7 @@ public class RestaurantListActivity extends BaseActivity<ActivityRestaurantListB
             if (categoryId > 0 && categoryName != null && !categoryName.isEmpty()) {
                 getSupportActionBar().setTitle(categoryName);
             } else {
-                getSupportActionBar().setTitle("Tất cả nhà hàng");
+                getSupportActionBar().setTitle("Tất cả sản phẩm");
             }
         }
         binding.toolbar.setNavigationOnClickListener(v -> finish());
@@ -54,21 +53,21 @@ public class RestaurantListActivity extends BaseActivity<ActivityRestaurantListB
 
         // Setup SwipeRefresh
         binding.swipeRefresh.setOnRefreshListener(() -> {
-            viewModel.refreshRestaurants(categoryId);
+            viewModel.refreshProducts(categoryId);
         });
 
         // Load data
         if (categoryId > 0) {
-            viewModel.loadRestaurantsByCategory(categoryId, 1);
+            viewModel.loadProductsByCategory(categoryId, 1);
         } else {
-            viewModel.loadRestaurants(1);
+            viewModel.loadProducts(1);
         }
     }
 
     @Override
     protected void observeData() {
-        // Observe restaurants
-        viewModel.getRestaurantsLiveData().observe(this, resource -> {
+        // Observe products
+        viewModel.getProductsLiveData().observe(this, resource -> {
             if (resource == null) return;
 
             isLoadingMore = false;
@@ -90,9 +89,9 @@ public class RestaurantListActivity extends BaseActivity<ActivityRestaurantListB
 
                     if (resource.getData() != null) {
                         if (viewModel.getCurrentPage() == 1) {
-                            restaurantAdapter.setItems(resource.getData());
+                            productAdapter.setItems(resource.getData());
                         } else {
-                            restaurantAdapter.addItems(resource.getData());
+                            productAdapter.addItems(resource.getData());
                         }
 
                         updateEmptyState();
@@ -106,7 +105,7 @@ public class RestaurantListActivity extends BaseActivity<ActivityRestaurantListB
                     if (viewModel.getCurrentPage() == 1) {
                         binding.tvEmpty.setText(resource.getMessage());
                         binding.tvEmpty.setVisibility(View.VISIBLE);
-                        binding.rvRestaurants.setVisibility(View.GONE);
+                        binding.rvProducts.setVisibility(View.GONE);
                     } else {
                         showToast("Không thể tải thêm");
                     }
@@ -116,19 +115,19 @@ public class RestaurantListActivity extends BaseActivity<ActivityRestaurantListB
     }
 
     private void setupRecyclerView() {
-        restaurantAdapter = new RestaurantAdapter();
-        restaurantAdapter.setOnItemClickListener((restaurant, position) -> {
-            Intent intent = new Intent(this, RestaurantDetailActivity.class);
-            intent.putExtra(Constants.KEY_RESTAURANT_ID, restaurant.getId());
+        productAdapter = new ProductAdapter();
+        productAdapter.setOnItemClickListener((product, position) -> {
+            Intent intent = new Intent(this, ProductDetailActivity.class);
+            intent.putExtra(Constants.KEY_PRODUCT_ID, product.getId());
             startActivity(intent);
         });
 
-        LinearLayoutManager layoutManager = new LinearLayoutManager(this);
-        binding.rvRestaurants.setLayoutManager(layoutManager);
-        binding.rvRestaurants.setAdapter(restaurantAdapter);
+        GridLayoutManager layoutManager = new GridLayoutManager(this, 2);
+        binding.rvProducts.setLayoutManager(layoutManager);
+        binding.rvProducts.setAdapter(productAdapter);
 
         // Infinite scroll
-        binding.rvRestaurants.addOnScrollListener(new RecyclerView.OnScrollListener() {
+        binding.rvProducts.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
             public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
                 super.onScrolled(recyclerView, dx, dy);
@@ -141,41 +140,41 @@ public class RestaurantListActivity extends BaseActivity<ActivityRestaurantListB
                     if ((visibleItemCount + firstVisibleItemPosition) >= totalItemCount
                             && firstVisibleItemPosition >= 0
                             && totalItemCount >= 10) {
-                        loadMoreRestaurants();
+                        loadMoreProducts();
                     }
                 }
             }
         });
     }
 
-    private void loadMoreRestaurants() {
+    private void loadMoreProducts() {
         if (!isLoadingMore && viewModel.canLoadMore()) {
             isLoadingMore = true;
-            viewModel.loadMoreRestaurants();
+            viewModel.loadMoreProducts();
         }
     }
 
     private void updateEmptyState() {
-        if (restaurantAdapter.getItemCount() == 0) {
+        if (productAdapter.getItemCount() == 0) {
             binding.tvEmpty.setVisibility(View.VISIBLE);
-            binding.rvRestaurants.setVisibility(View.GONE);
-            binding.tvEmpty.setText("Chưa có nhà hàng nào");
+            binding.rvProducts.setVisibility(View.GONE);
+            binding.tvEmpty.setText("Chưa có sản phẩm nào");
         } else {
             binding.tvEmpty.setVisibility(View.GONE);
-            binding.rvRestaurants.setVisibility(View.VISIBLE);
+            binding.rvProducts.setVisibility(View.VISIBLE);
         }
     }
 
     @Override
     protected void showLoading() {
         binding.progressBar.setVisibility(View.VISIBLE);
-        binding.rvRestaurants.setVisibility(View.GONE);
+        binding.rvProducts.setVisibility(View.GONE);
         binding.tvEmpty.setVisibility(View.GONE);
     }
 
     @Override
     protected void hideLoading() {
         binding.progressBar.setVisibility(View.GONE);
-        binding.rvRestaurants.setVisibility(View.VISIBLE);
+        binding.rvProducts.setVisibility(View.VISIBLE);
     }
 }

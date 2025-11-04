@@ -52,10 +52,31 @@
                             android:layout_marginStart="8dp"
                             android:hint="Tìm món ăn, nhà hàng..."
                             android:background="@android:color/transparent"
-                            android:focusable="false"
-                            android:textSize="14sp" />
+                            android:textSize="14sp"
+                            android:maxLines="1" />
+
+                        <ImageView
+                            android:id="@+id/iv_clear_search"
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:src="@android:drawable/ic_menu_close_clear_cancel"
+                            android:visibility="gone"
+                            app:tint="@color/text_hint"
+                            tools:visibility="visible" />
                     </LinearLayout>
                 </androidx.cardview.widget.CardView>
+
+                <!-- Clear Filter Button -->
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_clear_filter"
+                    style="@style/Widget.Material3.Button.TextButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:text="Xóa bộ lọc"
+                    android:visibility="gone"
+                    app:icon="@android:drawable/ic_menu_close_clear_cancel"
+                    tools:visibility="visible" />
 
                 <!-- Categories Section -->
                 <LinearLayout
@@ -117,6 +138,77 @@
                         tools:listitem="@layout/item_promotion" />
                 </LinearLayout>
 
+                <!-- Products Section (Featured or by Category) -->
+                <LinearLayout
+                    android:id="@+id/layout_products"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:paddingTop="16dp"
+                    android:visibility="gone"
+                    tools:visibility="visible">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:paddingStart="16dp"
+                        android:paddingEnd="16dp"
+                        android:layout_marginBottom="12dp">
+
+                        <TextView
+                            android:id="@+id/tv_product_title"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="Sản phẩm nổi bật"
+                            android:textColor="@color/text_primary"
+                            android:textSize="18sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:id="@+id/tv_view_all_products"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Xem tất cả"
+                            android:textColor="@color/primary"
+                            android:textSize="14sp"
+                            android:visibility="gone"
+                            tools:visibility="visible" />
+                    </LinearLayout>
+
+                    <ProgressBar
+                        android:id="@+id/progress_products"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:layout_margin="16dp"
+                        android:visibility="gone"
+                        tools:visibility="visible" />
+
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/rv_products"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:nestedScrollingEnabled="false"
+                        android:paddingStart="12dp"
+                        android:paddingEnd="12dp"
+                        android:paddingBottom="16dp"
+                        tools:listitem="@layout/item_product_grid" />
+
+                    <TextView
+                        android:id="@+id/tv_empty_products"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:layout_margin="16dp"
+                        android:text="Chưa có sản phẩm nào"
+                        android:textColor="@color/text_hint"
+                        android:visibility="gone"
+                        tools:visibility="visible" />
+                </LinearLayout>
+
                 <!-- Restaurants Section -->
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -125,6 +217,7 @@
                     android:paddingTop="16dp">
 
                     <TextView
+                        android:id="@+id/tv_restaurant_title"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="16dp"
@@ -154,6 +247,15 @@
                         android:textColor="@color/text_hint"
                         android:visibility="gone"
                         tools:visibility="visible" />
+
+                    <!-- Loading More Indicator -->
+                    <ProgressBar
+                        android:id="@+id/progress_load_more"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:layout_margin="16dp"
+                        android:visibility="gone" />
                 </LinearLayout>
             </LinearLayout>
         </androidx.core.widget.NestedScrollView>

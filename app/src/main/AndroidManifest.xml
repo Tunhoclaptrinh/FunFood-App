@@ -54,23 +54,29 @@
             android:exported="false"
             android:theme="@style/Theme.FunFood" />
 
+        <!-- Restaurant List Activity (NEW) -->
+        <activity
+            android:name=".presentation.restaurant.list.RestaurantListActivity"
+            android:exported="false"
+            android:theme="@style/Theme.FunFood" />
+
         <!-- Product Detail Activity -->
         <activity
             android:name=".presentation.product.ProductDetailActivity"
             android:exported="false"
             android:theme="@style/Theme.FunFood" />
 
+        <!-- Product List Activity (NEW) -->
+        <activity
+            android:name=".presentation.product.ProductListActivity"
+            android:exported="false"
+            android:theme="@style/Theme.FunFood" />
 
         <!-- Notification Activity -->
         <activity
             android:name=".presentation.notification.NotificationActivity"
             android:exported="false"
             android:theme="@style/Theme.FunFood" />
-
-        <!-- Google Maps API Key -->
-        <meta-data
-            android:name="com.google.android.geo.API_KEY"
-            android:value="YOUR_GOOGLE_MAPS_API_KEY" />
 
         <!-- Profile Activities -->
         <activity
@@ -85,10 +91,16 @@
             android:windowSoftInputMode="adjustResize"
             android:theme="@style/Theme.FunFood" />
 
+        <!-- Address Activity -->
         <activity
             android:name=".presentation.address.AddressListActivity"
             android:exported="false"
             android:theme="@style/Theme.FunFood" />
+
+        <!-- Google Maps API Key -->
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="YOUR_GOOGLE_MAPS_API_KEY" />
 
     </application>
 

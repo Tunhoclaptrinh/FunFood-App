@@ -9,8 +9,16 @@ import retrofit2.http.Path;
 import retrofit2.http.Query;
 
 public interface ProductApi {
+    // Hàm này dùng để lấy sản phẩm nổi bật (tất cả nhà hàng)
     @GET("products")
     Call<ApiResponse<List<Product>>> getProducts(
+            @Query("_page") int page,
+            @Query("_limit") int limit
+    );
+
+    // Đổi tên hàm cũ hoặc thêm hàm mới để lấy sản phẩm theo nhà hàng
+    @GET("products")
+    Call<ApiResponse<List<Product>>> getProductsByRestaurant(
             @Query("restaurantId") int restaurantId,
             @Query("_page") int page,
             @Query("_limit") int limit
