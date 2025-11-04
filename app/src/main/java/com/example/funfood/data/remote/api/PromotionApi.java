@@ -7,7 +7,7 @@ import retrofit2.Call;
 import retrofit2.http.GET;
 
 public interface PromotionApi {
-    @GET("promotions/active")
+    @GET("promotions?isActive_in=true")
     Call<ApiResponse<List<Promotion>>> getActivePromotions();
 
     @GET("promotions")
