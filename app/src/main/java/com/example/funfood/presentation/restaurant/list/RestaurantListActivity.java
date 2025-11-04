@@ -29,18 +29,32 @@ public class RestaurantListActivity extends BaseActivity<ActivityRestaurantListB
 
     @Override
     protected void setupViews() {
-        // Get category info from intent
+        // Get category info from intent (optional)
         categoryId = getIntent().getIntExtra(Constants.KEY_CATEGORY_ID, -1);
         categoryName = getIntent().getStringExtra("category_name");
 
         viewModel = new ViewModelProvider(this).get(RestaurantListViewModel.class);
 
         // Setup toolbar
+        setupToolbar();
+
+        // Setup RecyclerView
+        setupRecyclerView();
+
+        // Setup SwipeRefresh
+        setupSwipeRefresh();
+
+        // Load initial data
+        loadData();
+    }
+
+    private void setupToolbar() {
         setSupportActionBar(binding.toolbar);
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             getSupportActionBar().setDisplayShowHomeEnabled(true);
 
+            // Set title based on category
             if (categoryId > 0 && categoryName != null && !categoryName.isEmpty()) {
                 getSupportActionBar().setTitle(categoryName);
             } else {
@@ -48,20 +62,66 @@ public class RestaurantListActivity extends BaseActivity<ActivityRestaurantListB
             }
         }
         binding.toolbar.setNavigationOnClickListener(v -> finish());
+    }
 
-        // Setup RecyclerView
-        setupRecyclerView();
-
-        // Setup SwipeRefresh
-        binding.swipeRefresh.setOnRefreshListener(() -> {
-            viewModel.refreshRestaurants(categoryId);
+    private void setupRecyclerView() {
+        restaurantAdapter = new RestaurantAdapter();
+        restaurantAdapter.setOnItemClickListener((restaurant, position) -> {
+            Intent intent = new Intent(this, RestaurantDetailActivity.class);
+            intent.putExtra(Constants.KEY_RESTAURANT_ID, restaurant.getId());
+            startActivity(intent);
         });
 
-        // Load data
+        LinearLayoutManager layoutManager = new LinearLayoutManager(this);
+        binding.rvRestaurants.setLayoutManager(layoutManager);
+        binding.rvRestaurants.setAdapter(restaurantAdapter);
+
+        // Setup infinite scroll
+        binding.rvRestaurants.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+                super.onScrolled(recyclerView, dx, dy);
+
+                // Check if scrolling down
+                if (dy <= 0) return;
+
+                int visibleItemCount = layoutManager.getChildCount();
+                int totalItemCount = layoutManager.getItemCount();
+                int firstVisibleItemPosition = layoutManager.findFirstVisibleItemPosition();
+
+                // Load more when reaching near bottom
+                if (!isLoadingMore && viewModel.canLoadMore()) {
+                    if ((visibleItemCount + firstVisibleItemPosition) >= totalItemCount - 2
+                            && firstVisibleItemPosition >= 0) {
+                        loadMoreRestaurants();
+                    }
+                }
+            }
+        });
+    }
+
+    private void setupSwipeRefresh() {
+        binding.swipeRefresh.setOnRefreshListener(() -> {
+            refreshData();
+        });
+    }
+
+    private void loadData() {
         if (categoryId > 0) {
             viewModel.loadRestaurantsByCategory(categoryId, 1);
         } else {
             viewModel.loadRestaurants(1);
+        }
+    }
+
+    private void refreshData() {
+        viewModel.refreshRestaurants(categoryId);
+    }
+
+    private void loadMoreRestaurants() {
+        if (!isLoadingMore && viewModel.canLoadMore()) {
+            isLoadingMore = true;
+            viewModel.loadMoreRestaurants();
         }
     }
 
@@ -90,8 +150,10 @@ public class RestaurantListActivity extends BaseActivity<ActivityRestaurantListB
 
                     if (resource.getData() != null) {
                         if (viewModel.getCurrentPage() == 1) {
+                            // First page - replace all
                             restaurantAdapter.setItems(resource.getData());
                         } else {
+                            // Next pages - append
                             restaurantAdapter.addItems(resource.getData());
                         }
 
@@ -104,10 +166,13 @@ public class RestaurantListActivity extends BaseActivity<ActivityRestaurantListB
                     binding.progressLoadMore.setVisibility(View.GONE);
 
                     if (viewModel.getCurrentPage() == 1) {
-                        binding.tvEmpty.setText(resource.getMessage());
+                        // Error on first page
+                        binding.tvEmpty.setText(resource.getMessage() != null ?
+                                resource.getMessage() : "Không thể tải danh sách nhà hàng");
                         binding.tvEmpty.setVisibility(View.VISIBLE);
                         binding.rvRestaurants.setVisibility(View.GONE);
                     } else {
+                        // Error on next pages
                         showToast("Không thể tải thêm");
                     }
                     break;
@@ -115,51 +180,16 @@ public class RestaurantListActivity extends BaseActivity<ActivityRestaurantListB
         });
     }
 
-    private void setupRecyclerView() {
-        restaurantAdapter = new RestaurantAdapter();
-        restaurantAdapter.setOnItemClickListener((restaurant, position) -> {
-            Intent intent = new Intent(this, RestaurantDetailActivity.class);
-            intent.putExtra(Constants.KEY_RESTAURANT_ID, restaurant.getId());
-            startActivity(intent);
-        });
-
-        LinearLayoutManager layoutManager = new LinearLayoutManager(this);
-        binding.rvRestaurants.setLayoutManager(layoutManager);
-        binding.rvRestaurants.setAdapter(restaurantAdapter);
-
-        // Infinite scroll
-        binding.rvRestaurants.addOnScrollListener(new RecyclerView.OnScrollListener() {
-            @Override
-            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
-                super.onScrolled(recyclerView, dx, dy);
-
-                int visibleItemCount = layoutManager.getChildCount();
-                int totalItemCount = layoutManager.getItemCount();
-                int firstVisibleItemPosition = layoutManager.findFirstVisibleItemPosition();
-
-                if (!isLoadingMore && viewModel.canLoadMore()) {
-                    if ((visibleItemCount + firstVisibleItemPosition) >= totalItemCount
-                            && firstVisibleItemPosition >= 0
-                            && totalItemCount >= 10) {
-                        loadMoreRestaurants();
-                    }
-                }
-            }
-        });
-    }
-
-    private void loadMoreRestaurants() {
-        if (!isLoadingMore && viewModel.canLoadMore()) {
-            isLoadingMore = true;
-            viewModel.loadMoreRestaurants();
-        }
-    }
-
     private void updateEmptyState() {
         if (restaurantAdapter.getItemCount() == 0) {
             binding.tvEmpty.setVisibility(View.VISIBLE);
             binding.rvRestaurants.setVisibility(View.GONE);
-            binding.tvEmpty.setText("Chưa có nhà hàng nào");
+
+            if (categoryId > 0) {
+                binding.tvEmpty.setText("Chưa có nhà hàng nào trong danh mục này");
+            } else {
+                binding.tvEmpty.setText("Chưa có nhà hàng nào");
+            }
         } else {
             binding.tvEmpty.setVisibility(View.GONE);
             binding.rvRestaurants.setVisibility(View.VISIBLE);
