@@ -16,6 +16,7 @@ import com.example.funfood.data.preferences.UserPreferences;
 import com.example.funfood.databinding.ActivityMainBinding;
 import com.example.funfood.presentation.auth.LoginActivity;
 import com.example.funfood.presentation.cart.CartActivity; // FIX 2: Thêm import cho CartActivity
+import com.example.funfood.presentation.notification.NotificationActivity;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 public class MainActivity extends AppCompatActivity {
@@ -60,6 +61,7 @@ public class MainActivity extends AppCompatActivity {
         return true;
     }
 
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
@@ -68,21 +70,22 @@ public class MainActivity extends AppCompatActivity {
             logout();
             return true;
         }
-        // FIX 3: Thêm khối else if để xử lý sự kiện click vào giỏ hàng
+        // FIX 3: Khối này đã đúng, sẽ hết crash sau khi sửa manifest
         else if (id == R.id.action_cart) {
             Intent intent = new Intent(this, CartActivity.class);
             startActivity(intent);
             return true;
         }
-        // FIX 4: Thêm xử lý cho các icon còn lại (nếu có)
+        // FIX 4: Thay đổi để mở NotificationActivity
+        else if (id == R.id.action_notifications) {
+            // Mở màn hình thông báo
+            Intent intent = new Intent(this, NotificationActivity.class);
+            startActivity(intent); // Thêm dòng này
+            return true;
+        }
         else if (id == R.id.action_search) {
             Toast.makeText(this, "Chức năng tìm kiếm chưa được cài đặt", Toast.LENGTH_SHORT).show();
             // TODO: Mở màn hình tìm kiếm
-            return true;
-        }
-        else if (id == R.id.action_notifications) {
-            Toast.makeText(this, "Chức năng thông báo chưa được cài đặt", Toast.LENGTH_SHORT).show();
-            // TODO: Mở màn hình thông báo
             return true;
         }
 

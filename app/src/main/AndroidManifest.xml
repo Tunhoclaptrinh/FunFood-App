@@ -82,14 +82,14 @@
         <activity
             android:name=".presentation.profile.EditProfileActivity"
             android:exported="false"
-            android:windowSoftInputMode="adjustResize"
-            android:theme="@style/Theme.FunFood" />
+            android:theme="@style/Theme.FunFood"
+            android:windowSoftInputMode="adjustResize" />
 
         <activity
             android:name=".presentation.profile.ChangePasswordActivity"
             android:exported="false"
-            android:windowSoftInputMode="adjustResize"
-            android:theme="@style/Theme.FunFood" />
+            android:theme="@style/Theme.FunFood"
+            android:windowSoftInputMode="adjustResize" />
 
         <!-- Address Activity -->
         <activity
@@ -101,6 +101,12 @@
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="YOUR_GOOGLE_MAPS_API_KEY" />
+
+
+        <activity
+            android:name=".presentation.cart.CartActivity"
+            android:exported="false"
+            android:theme="@style/Theme.FunFood" />
 
     </application>
 
