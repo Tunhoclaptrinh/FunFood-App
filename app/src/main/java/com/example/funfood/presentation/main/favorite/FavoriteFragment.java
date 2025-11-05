@@ -1,6 +1,6 @@
 package com.example.funfood.presentation.main.favorite;
 
-import android.content.Intent; // <-- THÊM IMPORT NÀY
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -17,20 +17,49 @@ import com.example.funfood.domain.model.Favorite;
 import com.example.funfood.domain.model.Restaurant;
 import com.example.funfood.presentation.base.BaseFragment;
 import com.example.funfood.presentation.main.favorite.adapter.FavoriteAdapter;
-
-// <-- THÊM 2 IMPORT NÀY -->
 import com.example.funfood.presentation.restaurant.detail.RestaurantDetailActivity;
 import com.example.funfood.util.Constants;
-
 import com.example.funfood.util.Resource;
 
 import java.util.List;
+
+// --- IMPORTS CẦN THÊM ĐỂ BỎ HILT ---
+import androidx.lifecycle.ViewModel;
+import com.example.funfood.data.remote.RetrofitClient;
+import com.example.funfood.data.remote.api.FavoriteApi;
+import com.example.funfood.data.repository.FavoriteRepository;
+// --- KẾT THÚC IMPORTS ---
 
 
 public class FavoriteFragment extends BaseFragment<FragmentFavoriteBinding> {
 
     private FavoriteViewModel viewModel;
     private FavoriteAdapter favoriteAdapter;
+
+    // --- FACTORY ĐỂ BỎ HILT ---
+    /**
+     * Factory tùy chỉnh để khởi tạo FavoriteViewModel bằng tay
+     * thay vì dùng Hilt.
+     */
+    private static class FavoriteViewModelFactory implements ViewModelProvider.Factory {
+        private final FavoriteRepository repository;
+
+        public FavoriteViewModelFactory(FavoriteRepository repository) {
+            this.repository = repository;
+        }
+
+        @NonNull
+        @Override
+        public <T extends ViewModel> T create(@NonNull Class<T> modelClass) {
+            if (modelClass.isAssignableFrom(FavoriteViewModel.class)) {
+                // Bỏ qua cảnh báo unchecked cast vì chúng ta biết chắc kiểu
+                //noinspection unchecked
+                return (T) new FavoriteViewModel(repository);
+            }
+            throw new IllegalArgumentException("Unknown ViewModel class: " + modelClass.getName());
+        }
+    }
+    // --- KẾT THÚC FACTORY ---
 
     @Override
     protected FragmentFavoriteBinding getViewBinding(LayoutInflater inflater, ViewGroup container) {
@@ -41,8 +70,25 @@ public class FavoriteFragment extends BaseFragment<FragmentFavoriteBinding> {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        // Khởi tạo ViewModel qua Hilt
-        viewModel = new ViewModelProvider(this).get(FavoriteViewModel.class);
+        // --- BỎ HILT - KHỞI TẠO VIEWMODEL MANUAL ---
+
+        // 1. Lấy RetrofitClient singleton
+        // Sử dụng applicationContext để đảm bảo an toàn
+        RetrofitClient retrofitClient = RetrofitClient.getInstance(requireContext().getApplicationContext());
+
+        // 2. Tạo FavoriteApi từ RetrofitClient
+        FavoriteApi favoriteApi = retrofitClient.createService(FavoriteApi.class);
+
+        // 3. Tạo FavoriteRepository
+        FavoriteRepository favoriteRepository = new FavoriteRepository(favoriteApi);
+
+        // 4. Tạo ViewModelFactory tùy chỉnh
+        FavoriteViewModelFactory factory = new FavoriteViewModelFactory(favoriteRepository);
+
+        // 5. Khởi tạo ViewModel qua Factory (thay vì Hilt)
+        viewModel = new ViewModelProvider(this, factory).get(FavoriteViewModel.class);
+
+        // --- KẾT THÚC BỎ HILT ---
 
         setupViews();
         observeData();
@@ -58,7 +104,6 @@ public class FavoriteFragment extends BaseFragment<FragmentFavoriteBinding> {
         // Xử lý sự kiện click
         favoriteAdapter.setOnFavoriteClickListener(new FavoriteAdapter.OnFavoriteClickListener() {
 
-            // --- ĐÂY LÀ PHẦN CẬP NHẬT ---
             @Override
             public void onItemClick(Restaurant restaurant) {
                 // Chuyển sang màn hình chi tiết nhà hàng
@@ -67,7 +112,6 @@ public class FavoriteFragment extends BaseFragment<FragmentFavoriteBinding> {
                 intent.putExtra(Constants.KEY_RESTAURANT_ID, restaurant.getId());
                 startActivity(intent);
             }
-            // --- KẾT THÚC CẬP NHẬT ---
 
             @Override
             public void onRemoveClick(Favorite favorite) {
