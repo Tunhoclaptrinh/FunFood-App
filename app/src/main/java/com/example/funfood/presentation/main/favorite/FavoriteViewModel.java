@@ -5,9 +5,7 @@ package com.example.funfood.presentation.main.favorite;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
-// IMPORT QUAN TRỌNG:
 import androidx.lifecycle.Transformations;
-// KHÔNG import androidx.lifecycle.switchMap;
 
 import com.example.funfood.data.repository.FavoriteRepository;
 import com.example.funfood.domain.model.Favorite;
@@ -27,6 +25,10 @@ public class FavoriteViewModel extends ViewModel {
 
     private final MutableLiveData<SingleEvent<Resource<Object>>> _removeFavoriteEvent = new MutableLiveData<>();
     public final LiveData<SingleEvent<Resource<Object>>> removeFavoriteEvent = _removeFavoriteEvent;
+
+    // THÊM MỚI: LiveData cho add favorite
+    private final MutableLiveData<SingleEvent<Resource<Object>>> _addFavoriteEvent = new MutableLiveData<>();
+    public final LiveData<SingleEvent<Resource<Object>>> addFavoriteEvent = _addFavoriteEvent;
 
     public FavoriteViewModel(FavoriteRepository repository) {
         this.repository = repository;
@@ -49,6 +51,16 @@ public class FavoriteViewModel extends ViewModel {
 
         repository.toggleFavorite(restaurantId, resource -> {
             _removeFavoriteEvent.postValue(new SingleEvent<>(resource));
+            if (resource.getStatus() == Resource.Status.SUCCESS) {
+                fetchFavorites();
+            }
+        });
+    }
+
+    // THÊM MỚI: Method để thêm vào yêu thích
+    public void addFavorite(int restaurantId) {
+        repository.toggleFavorite(restaurantId, resource -> {
+            _addFavoriteEvent.postValue(new SingleEvent<>(resource));
             if (resource.getStatus() == Resource.Status.SUCCESS) {
                 fetchFavorites();
             }

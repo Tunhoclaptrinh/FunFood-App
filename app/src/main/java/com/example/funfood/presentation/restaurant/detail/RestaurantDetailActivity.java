@@ -3,33 +3,56 @@ package com.example.funfood.presentation.restaurant.detail;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.net.Uri;
 
+import androidx.annotation.NonNull;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.GridLayoutManager;
 
+import com.example.funfood.R;
 import com.example.funfood.databinding.ActivityRestaurantDetailBinding;
 import com.example.funfood.presentation.base.BaseActivity;
 import com.example.funfood.presentation.product.ProductDetailActivity;
 import com.example.funfood.presentation.restaurant.detail.adapter.ProductAdapter;
+import com.example.funfood.presentation.cart.CartActivity;
 import com.example.funfood.util.Constants;
 import com.example.funfood.util.CurrencyUtil;
 import com.example.funfood.util.ImageUtil;
 
-import android.content.Intent;
-import android.view.Menu;
-import android.view.MenuItem;
-import androidx.annotation.NonNull;
-import com.example.funfood.R;
-import com.example.funfood.presentation.cart.CartActivity;
-
-import android.content.Intent;
-import android.net.Uri;
+// Import cho FavoriteViewModel
+import androidx.lifecycle.ViewModel;
+import com.example.funfood.data.remote.RetrofitClient;
+import com.example.funfood.data.remote.api.FavoriteApi;
+import com.example.funfood.data.repository.FavoriteRepository;
+import com.example.funfood.presentation.main.favorite.FavoriteViewModel;
 
 public class RestaurantDetailActivity extends BaseActivity<ActivityRestaurantDetailBinding> {
 
     private RestaurantDetailViewModel viewModel;
+    private FavoriteViewModel favoriteViewModel;
     private ProductAdapter productAdapter;
     private int restaurantId;
+
+    // Factory cho FavoriteViewModel
+    private static class FavoriteViewModelFactory implements ViewModelProvider.Factory {
+        private final FavoriteRepository repository;
+
+        public FavoriteViewModelFactory(FavoriteRepository repository) {
+            this.repository = repository;
+        }
+
+        @NonNull
+        @Override
+        public <T extends ViewModel> T create(@NonNull Class<T> modelClass) {
+            if (modelClass.isAssignableFrom(FavoriteViewModel.class)) {
+                //noinspection unchecked
+                return (T) new FavoriteViewModel(repository);
+            }
+            throw new IllegalArgumentException("Unknown ViewModel class");
+        }
+    }
 
     @Override
     protected ActivityRestaurantDetailBinding getViewBinding() {
@@ -39,14 +62,22 @@ public class RestaurantDetailActivity extends BaseActivity<ActivityRestaurantDet
     @Override
     protected void setupViews() {
         // Get restaurant ID from intent
-        restaurantId = getIntent().getIntExtra(com.example.funfood.util.Constants.KEY_RESTAURANT_ID, -1);
+        restaurantId = getIntent().getIntExtra(Constants.KEY_RESTAURANT_ID, -1);
         if (restaurantId == -1) {
             showToast("Invalid restaurant");
             finish();
             return;
         }
 
+        // Initialize ViewModels
         viewModel = new ViewModelProvider(this).get(RestaurantDetailViewModel.class);
+
+        // Initialize FavoriteViewModel
+        RetrofitClient retrofitClient = RetrofitClient.getInstance(getApplicationContext());
+        FavoriteApi favoriteApi = retrofitClient.createService(FavoriteApi.class);
+        FavoriteRepository favoriteRepository = new FavoriteRepository(favoriteApi);
+        FavoriteViewModelFactory factory = new FavoriteViewModelFactory(favoriteRepository);
+        favoriteViewModel = new ViewModelProvider(this, factory).get(FavoriteViewModel.class);
 
         // Setup toolbar
         setSupportActionBar(binding.toolbar);
@@ -58,6 +89,12 @@ public class RestaurantDetailActivity extends BaseActivity<ActivityRestaurantDet
 
         // Setup products RecyclerView
         setupProductsRecyclerView();
+
+        // Setup favorite button - ĐƠN GIẢN CHỈ CẦN CLICK
+        binding.btnFavorite.setOnClickListener(v -> {
+            // Gọi API thêm vào yêu thích
+            favoriteViewModel.addFavorite(restaurantId);
+        });
 
         // Load data
         viewModel.loadRestaurant(restaurantId);
@@ -116,12 +153,36 @@ public class RestaurantDetailActivity extends BaseActivity<ActivityRestaurantDet
                     break;
             }
         });
+
+        // Observe add favorite action
+        favoriteViewModel.addFavoriteEvent.observe(this, event -> {
+            if (event == null) return;
+
+            var resource = event.getContentIfNotHandled();
+            if (resource == null) return;
+
+            switch (resource.getStatus()) {
+                case LOADING:
+                    // Disable button trong lúc loading
+                    binding.btnFavorite.setEnabled(false);
+                    break;
+
+                case SUCCESS:
+                    binding.btnFavorite.setEnabled(true);
+                    showToast("Đã thêm vào yêu thích");
+                    break;
+
+                case ERROR:
+                    binding.btnFavorite.setEnabled(true);
+                    showToast("Lỗi: " + resource.getMessage());
+                    break;
+            }
+        });
     }
 
     private void setupProductsRecyclerView() {
         productAdapter = new ProductAdapter();
         productAdapter.setOnItemClickListener((product, position) -> {
-            // logic Intent để mở màn hình chi tiết
             Intent intent = new Intent(this, ProductDetailActivity.class);
             intent.putExtra(Constants.KEY_PRODUCT_ID, product.getId());
             startActivity(intent);
@@ -179,34 +240,32 @@ public class RestaurantDetailActivity extends BaseActivity<ActivityRestaurantDet
         // Open/Close status
         if (restaurant.isOpen()) {
             binding.tvStatus.setText("Đang mở cửa");
-            binding.tvStatus.setTextColor(getColor(com.example.funfood.R.color.success));
+            binding.tvStatus.setTextColor(getColor(R.color.success));
             binding.tvOpenTime.setText(String.format("%s - %s",
                     restaurant.getOpenTime(), restaurant.getCloseTime()));
         } else {
             binding.tvStatus.setText("Đã đóng cửa");
-            binding.tvStatus.setTextColor(getColor(com.example.funfood.R.color.error));
+            binding.tvStatus.setTextColor(getColor(R.color.error));
             binding.tvOpenTime.setText("Mở cửa lúc " + restaurant.getOpenTime());
         }
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // "Thổi" menu của bạn (menu_main.xml) vào Toolbar
         getMenuInflater().inflate(R.menu.menu_main, menu);
         return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        // Kiểm tra đúng ID 'action_cart' từ file XML của bạn
         if (item.getItemId() == R.id.action_cart) {
-            // Mở CartActivity
             Intent intent = new Intent(this, CartActivity.class);
             startActivity(intent);
             return true;
         }
         return super.onOptionsItemSelected(item);
     }
+
     @Override
     protected void showLoading() {
         binding.progressBar.setVisibility(View.VISIBLE);
