@@ -9,11 +9,34 @@ import androidx.annotation.NonNull;
 
 import com.example.funfood.databinding.ItemProductGridBinding;
 import com.example.funfood.domain.model.Product;
+import com.example.funfood.domain.model.Restaurant;
 import com.example.funfood.presentation.base.BaseAdapter;
 import com.example.funfood.util.CurrencyUtil;
 import com.example.funfood.util.ImageUtil;
 
 public class ProductAdapter extends BaseAdapter<Product, ItemProductGridBinding> {
+    // 1. Định nghĩa interface cho các sự kiện click
+    public interface OnProductClickListener {
+        void onProductClick(Product product);
+    }
+
+    public interface OnRestaurantClickListener {
+        void onRestaurantClick(Restaurant restaurant);
+    }
+
+    // 2. Khai báo listeners
+    private OnProductClickListener productClickListener;
+    private OnRestaurantClickListener restaurantClickListener;
+
+    // 3. Tạo setters cho listeners
+    public void setOnProductClickListener(OnProductClickListener listener) {
+        this.productClickListener = listener;
+    }
+
+    public void setOnRestaurantClickListener(OnRestaurantClickListener listener) {
+        this.restaurantClickListener = listener;
+    }
+
 
     @NonNull
     @Override
@@ -71,5 +94,36 @@ public class ProductAdapter extends BaseAdapter<Product, ItemProductGridBinding>
             binding.tvUnavailable.setVisibility(View.GONE);
             binding.getRoot().setAlpha(1.0f);
         }
+
+        Restaurant restaurant = product.getRestaurant();
+        if (restaurant != null) {
+            binding.layoutRestaurant.setVisibility(View.VISIBLE);
+            binding.tvRestaurantName.setText(restaurant.getName());
+
+            // Load ảnh logo nhà hàng (Giả sử Restaurant có method getImage())
+            ImageUtil.loadImage(
+                    binding.getRoot().getContext(),
+                    restaurant.getImage(),
+                    binding.ivRestaurantLogo
+            );
+
+            // 5. Set Click Listener cho nhà hàng
+            binding.layoutRestaurant.setOnClickListener(v -> {
+                if (restaurantClickListener != null) {
+                    restaurantClickListener.onRestaurantClick(restaurant);
+                }
+            });
+
+        } else {
+            // Ẩn đi nếu không có thông tin nhà hàng (ví dụ: product.getRestaurant() là null)
+            binding.layoutRestaurant.setVisibility(View.GONE);
+        }
+
+        // 6. Set Click Listener cho toàn bộ item sản phẩm
+        binding.getRoot().setOnClickListener(v -> {
+            if (productClickListener != null && product.isAvailable()) {
+                productClickListener.onProductClick(product);
+            }
+        });
     }
 }
