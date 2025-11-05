@@ -18,6 +18,7 @@ public class CartViewModel extends AndroidViewModel {
     private final MutableLiveData<Resource<Cart>> cartLiveData = new MutableLiveData<>();
     private final MutableLiveData<Resource<CartItem>> addToCartResult = new MutableLiveData<>();
     private final MutableLiveData<Resource<Void>> removeResult = new MutableLiveData<>();
+    private final MutableLiveData<Resource<CartItem>> updateResult = new MutableLiveData<>(); // Thêm
 
     public CartViewModel(@NonNull Application application) {
         super(application);
@@ -37,10 +38,15 @@ public class CartViewModel extends AndroidViewModel {
         return removeResult;
     }
 
+    public LiveData<Resource<CartItem>> getUpdateResult() {
+        return updateResult;
+    }
+
     /**
      * Lấy giỏ hàng
      */
     public void loadCart() {
+        cartLiveData.setValue(Resource.loading(null)); // Thêm loading
         cartRepository.getCart().observeForever(resource -> {
             cartLiveData.setValue(resource);
         });
@@ -65,7 +71,9 @@ public class CartViewModel extends AndroidViewModel {
      * Cập nhật số lượng
      */
     public void updateQuantity(int cartItemId, int newQuantity) {
+        updateResult.setValue(Resource.loading(null));
         cartRepository.updateCartItem(cartItemId, newQuantity).observeForever(resource -> {
+            updateResult.setValue(resource);
             if (resource.getStatus() == Resource.Status.SUCCESS) {
                 loadCart();
             }

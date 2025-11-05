@@ -89,7 +89,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
-            android:gravity="center_vertical|space_between"
+            android:gravity="center_vertical"
             android:orientation="horizontal"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="@id/layout_info"
@@ -132,6 +132,14 @@
                     android:contentDescription="Tăng số lượng"
                     android:src="@android:drawable/ic_input_add"
                     app:tint="@color/primary" />
+
+                <ImageButton
+                    android:id="@+id/btnDelete"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@drawable/ic_delete"
+                    app:tint="@color/primary" />
+
             </LinearLayout>
 
             <!-- Item Total -->

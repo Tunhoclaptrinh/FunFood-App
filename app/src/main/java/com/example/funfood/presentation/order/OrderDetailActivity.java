@@ -6,8 +6,10 @@ import android.view.View;
 
 import androidx.lifecycle.ViewModelProvider;
 
+import com.example.funfood.R; // Thêm import R
 import com.example.funfood.databinding.ActivityOrderDetailBinding;
 import com.example.funfood.domain.model.Order;
+import com.example.funfood.domain.model.OrderItem; // Thêm import OrderItem
 import com.example.funfood.presentation.base.BaseActivity;
 import com.example.funfood.presentation.main.MainActivity;
 import com.example.funfood.util.Constants;
@@ -19,6 +21,7 @@ public class OrderDetailActivity extends BaseActivity<ActivityOrderDetailBinding
 
     private OrderDetailViewModel viewModel;
     private int orderId;
+    private Order currentOrder; // Lưu lại order hiện tại
 
     @Override
     protected ActivityOrderDetailBinding getViewBinding() {
@@ -35,7 +38,7 @@ public class OrderDetailActivity extends BaseActivity<ActivityOrderDetailBinding
             return;
         }
 
-        viewModel = new ViewModelProvider(this).get(OrderDetailViewModel.class);
+        viewModel = new ViewModelProvider(this).get(OrderDetailViewModel.class); // Lỗi đã được fix
 
         // Setup toolbar
         setSupportActionBar(binding.toolbar);
@@ -67,7 +70,8 @@ public class OrderDetailActivity extends BaseActivity<ActivityOrderDetailBinding
                 case SUCCESS:
                     hideLoading();
                     if (resource.getData() != null) {
-                        displayOrderInfo(resource.getData());
+                        currentOrder = resource.getData(); // Lưu đơn hàng
+                        displayOrderInfo(currentOrder);
                     }
                     break;
 
@@ -92,14 +96,16 @@ public class OrderDetailActivity extends BaseActivity<ActivityOrderDetailBinding
         // Delivery address
         binding.tvDeliveryAddress.setText(order.getDeliveryAddress());
 
-        // Order items
+        // Order items (FIX: Bỏ comment)
         if (order.getItems() != null) {
             StringBuilder itemsText = new StringBuilder();
             for (int i = 0; i < order.getItems().size(); i++) {
-                // Assuming OrderItem has productName and quantity
-                // Adjust based on your actual Order model
+                OrderItem item = order.getItems().get(i);
                 if (i > 0) itemsText.append("\n");
-                // itemsText.append(order.getItems().get(i).getProductName()).append(" x ").append(order.getItems().get(i).getQuantity());
+                // Lấy tên sản phẩm và số lượng từ OrderItem
+                itemsText.append(item.getProductName())
+                        .append(" x ")
+                        .append(item.getQuantity());
             }
             binding.tvOrderItems.setText(itemsText.toString());
         }
@@ -107,7 +113,10 @@ public class OrderDetailActivity extends BaseActivity<ActivityOrderDetailBinding
         // Summary
         binding.tvSubtotal.setText(CurrencyUtil.formatCurrency(order.getSubtotal()));
         binding.tvDeliveryFee.setText(CurrencyUtil.formatCurrency(order.getDeliveryFee()));
-        binding.tvDiscount.setText(CurrencyUtil.formatCurrency(order.getDiscount()));
+        // Tính toán giảm giá (nếu API không trả về field 'discount')
+        double discount = order.getSubtotal() + order.getDeliveryFee() - order.getTotal();
+        binding.tvDiscount.setText(CurrencyUtil.formatCurrency(-discount));
+
         binding.tvTotal.setText(CurrencyUtil.formatCurrency(order.getTotal()));
 
         // Payment method
@@ -119,37 +128,38 @@ public class OrderDetailActivity extends BaseActivity<ActivityOrderDetailBinding
     }
 
     private void updateOrderStatus(String status) {
+        if (status == null) status = ""; // Chống crash nếu status là null
         String statusText;
         int statusColor;
 
         switch (status) {
             case Constants.ORDER_STATUS_PENDING:
                 statusText = "Chờ xác nhận";
-                statusColor = getColor(com.example.funfood.R.color.status_pending);
+                statusColor = getColor(R.color.status_pending);
                 break;
             case Constants.ORDER_STATUS_CONFIRMED:
                 statusText = "Đã xác nhận";
-                statusColor = getColor(com.example.funfood.R.color.status_confirmed);
+                statusColor = getColor(R.color.status_confirmed);
                 break;
             case Constants.ORDER_STATUS_PREPARING:
                 statusText = "Đang chuẩn bị";
-                statusColor = getColor(com.example.funfood.R.color.status_preparing);
+                statusColor = getColor(R.color.status_preparing);
                 break;
             case Constants.ORDER_STATUS_DELIVERING:
                 statusText = "Đang giao";
-                statusColor = getColor(com.example.funfood.R.color.status_delivering);
+                statusColor = getColor(R.color.status_delivering);
                 break;
             case Constants.ORDER_STATUS_DELIVERED:
                 statusText = "Đã giao";
-                statusColor = getColor(com.example.funfood.R.color.status_delivered);
+                statusColor = getColor(R.color.status_delivered);
                 break;
             case Constants.ORDER_STATUS_CANCELLED:
                 statusText = "Đã hủy";
-                statusColor = getColor(com.example.funfood.R.color.status_cancelled);
+                statusColor = getColor(R.color.status_cancelled);
                 break;
             default:
                 statusText = "Không xác định";
-                statusColor = getColor(com.example.funfood.R.color.text_secondary);
+                statusColor = getColor(R.color.text_secondary);
         }
 
         binding.tvOrderStatus.setText(statusText);
@@ -157,6 +167,7 @@ public class OrderDetailActivity extends BaseActivity<ActivityOrderDetailBinding
     }
 
     private String getPaymentMethodName(String method) {
+        if (method == null) method = ""; // Chống crash
         switch (method) {
             case Constants.PAYMENT_CASH:
                 return "Tiền mặt";

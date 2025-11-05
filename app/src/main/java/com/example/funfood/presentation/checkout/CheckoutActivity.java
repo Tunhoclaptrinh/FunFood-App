@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView; // FIX: Import AutoCompleteTextView
 
 import androidx.lifecycle.ViewModelProvider;
 
@@ -12,7 +13,9 @@ import com.example.funfood.data.repository.OrderRepository;
 import com.example.funfood.domain.model.Cart;
 import com.example.funfood.domain.model.Address;
 import com.example.funfood.presentation.base.BaseActivity;
+import com.example.funfood.presentation.order.OrderDetailActivity;
 import com.example.funfood.util.CurrencyUtil;
+import com.example.funfood.util.Resource;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import java.util.ArrayList;
@@ -24,6 +27,9 @@ public class CheckoutActivity extends BaseActivity<ActivityCheckoutBinding> {
     private Cart currentCart;
     private Address selectedAddress;
     private String selectedPaymentMethod = "cash";
+
+    // Mảng này cần được truy cập bởi listener
+    private String[] paymentValues = {"cash", "card", "momo", "zalopay"};
 
     @Override
     protected ActivityCheckoutBinding getViewBinding() {
@@ -61,23 +67,21 @@ public class CheckoutActivity extends BaseActivity<ActivityCheckoutBinding> {
 
     private void setupPaymentMethodSpinner() {
         String[] paymentMethods = {"Tiền mặt", "Thẻ tín dụng", "Momo", "ZaloPay"};
-        String[] paymentValues = {"cash", "card", "momo", "zalopay"};
+        // paymentValues đã được chuyển lên biến thành viên
 
         ArrayAdapter<String> adapter = new ArrayAdapter<>(this,
-                android.R.layout.simple_spinner_item, paymentMethods);
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        binding.spinnerPaymentMethod.setAdapter(adapter);
+                android.R.layout.simple_spinner_dropdown_item, paymentMethods);
 
-        binding.spinnerPaymentMethod.setOnItemSelectedListener(
-                new android.widget.AdapterView.OnItemSelectedListener() {
-                    @Override
-                    public void onItemSelected(android.widget.AdapterView<?> parent, View view,
-                                               int position, long id) {
-                        selectedPaymentMethod = paymentValues[position];
-                    }
+        // FIX: Casting binding tới AutoCompleteTextView (vì nó nằm trong TextInputLayout)
+        ((AutoCompleteTextView) binding.spinnerPaymentMethod).setAdapter(adapter);
 
-                    @Override
-                    public void onNothingSelected(android.widget.AdapterView<?> parent) {}
+        // FIX: Đặt giá trị mặc định và listener cho AutoCompleteTextView
+        ((AutoCompleteTextView) binding.spinnerPaymentMethod).setText(paymentMethods[0], false);
+        selectedPaymentMethod = paymentValues[0];
+
+        ((AutoCompleteTextView) binding.spinnerPaymentMethod).setOnItemClickListener(
+                (parent, view, position, id) -> {
+                    selectedPaymentMethod = paymentValues[position];
                 });
     }
 
@@ -96,6 +100,9 @@ public class CheckoutActivity extends BaseActivity<ActivityCheckoutBinding> {
                     if (resource.getData() != null) {
                         currentCart = resource.getData();
                         displayCartSummary(resource.getData());
+
+                        // Tải địa chỉ sau khi tải giỏ hàng thành công
+                        viewModel.loadAddresses();
                     }
                     break;
                 case ERROR:
@@ -109,8 +116,20 @@ public class CheckoutActivity extends BaseActivity<ActivityCheckoutBinding> {
         viewModel.getAddressesLiveData().observe(this, resource -> {
             if (resource == null) return;
 
+            // Chỉ xử lý khi SUCCESS
             if (resource.getStatus() == Resource.Status.SUCCESS && resource.getData() != null) {
-                showAddressDialog(resource.getData());
+                List<Address> addresses = resource.getData();
+                if (selectedAddress == null && !addresses.isEmpty()) {
+                    // Tự động chọn địa chỉ đầu tiên hoặc địa chỉ mặc định
+                    // Ở đây, chúng ta chọn cái đầu tiên
+                    selectedAddress = addresses.get(0);
+                    binding.tvSelectedAddress.setText(selectedAddress.getAddress());
+                } else if (addresses.isEmpty()) {
+                    showToast("Vui lòng thêm địa chỉ giao hàng");
+                    // TODO: Chuyển người dùng đến màn hình Thêm Địa chỉ
+                }
+            } else if (resource.getStatus() == Resource.Status.ERROR) {
+                handleError("Không thể tải danh sách địa chỉ: " + resource.getMessage());
             }
         });
 
@@ -144,21 +163,35 @@ public class CheckoutActivity extends BaseActivity<ActivityCheckoutBinding> {
             Cart.CartSummary summary = cart.getSummary();
             binding.tvSubtotal.setText(CurrencyUtil.formatCurrency(summary.getSubtotal()));
             binding.tvDeliveryFee.setText(CurrencyUtil.formatCurrency(summary.getDeliveryFee()));
-            binding.tvDiscount.setText(CurrencyUtil.formatCurrency(summary.getTotal() -
-                    summary.getSubtotal() - summary.getDeliveryFee()));
+
+            // Tính toán giảm giá
+            double discount = summary.getSubtotal() + summary.getDeliveryFee() - summary.getTotal();
+            binding.tvDiscount.setText(CurrencyUtil.formatCurrency(-discount)); // Hiển thị số âm
+
             binding.tvTotal.setText(CurrencyUtil.formatCurrency(summary.getTotal()));
         }
     }
 
     private void showAddressDialog(List<Address> addresses) {
+        if (addresses == null || addresses.isEmpty()) {
+            showToast("Không có địa chỉ nào. Vui lòng thêm địa chỉ.");
+            // TODO: Chuyển sang màn hình thêm địa chỉ
+            return;
+        }
+
         String[] addressLabels = new String[addresses.size()];
+        int checkedItem = 0;
         for (int i = 0; i < addresses.size(); i++) {
             addressLabels[i] = addresses.get(i).getLabel() + " - " + addresses.get(i).getAddress();
+            if (selectedAddress != null && addresses.get(i).getId() == selectedAddress.getId()) {
+                checkedItem = i;
+            }
         }
+
 
         new MaterialAlertDialogBuilder(this)
                 .setTitle("Chọn địa chỉ giao hàng")
-                .setSingleChoiceItems(addressLabels, 0, (dialog, which) -> {
+                .setSingleChoiceItems(addressLabels, checkedItem, (dialog, which) -> {
                     selectedAddress = addresses.get(which);
                     binding.tvSelectedAddress.setText(selectedAddress.getAddress());
                     dialog.dismiss();
@@ -173,7 +206,20 @@ public class CheckoutActivity extends BaseActivity<ActivityCheckoutBinding> {
             return;
         }
 
-        viewModel.validatePromotion(promoCode);
+        if (currentCart == null || currentCart.getSummary() == null) {
+            showToast("Không thể áp dụng mã khi giỏ hàng trống");
+            return;
+        }
+
+        viewModel.validatePromotion(
+                promoCode,
+                currentCart.getSummary().getSubtotal(),
+                currentCart.getSummary().getDeliveryFee()
+        );
+
+        // TODO: Observe LiveData từ ViewModel để
+        // hiển thị kết quả validate (thành công/thất bại)
+        showToast("Đang áp dụng mã (logic chưa hoàn thiện)...");
     }
 
     private void placeOrder() {
@@ -183,7 +229,7 @@ public class CheckoutActivity extends BaseActivity<ActivityCheckoutBinding> {
             return;
         }
 
-        if (currentCart == null || currentCart.getItems().isEmpty()) {
+        if (currentCart == null || currentCart.getItems() == null || currentCart.getItems().isEmpty()) {
             showToast("Giỏ hàng trống");
             return;
         }
@@ -200,6 +246,10 @@ public class CheckoutActivity extends BaseActivity<ActivityCheckoutBinding> {
         String promoCode = binding.etPromotionCode.getText().toString().trim();
 
         // Get first restaurant from cart items
+        if (currentCart.getItems().get(0).getRestaurant() == null) {
+            handleError("Lỗi dữ liệu giỏ hàng (thiếu thông tin nhà hàng)");
+            return;
+        }
         int restaurantId = currentCart.getItems().get(0).getRestaurant().getId();
 
         // Create order request
@@ -227,6 +277,7 @@ public class CheckoutActivity extends BaseActivity<ActivityCheckoutBinding> {
         intent.putExtra("order_id", orderId);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);
+        finish(); // Kết thúc CheckoutActivity
     }
 
     @Override

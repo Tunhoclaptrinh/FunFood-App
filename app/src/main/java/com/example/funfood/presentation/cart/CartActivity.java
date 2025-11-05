@@ -14,6 +14,7 @@ import com.example.funfood.presentation.checkout.CheckoutActivity;
 import com.example.funfood.presentation.cart.adapter.CartAdapter;
 import com.example.funfood.util.CurrencyUtil;
 import com.example.funfood.util.Resource;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 public class CartActivity extends BaseActivity<ActivityCartBinding> {
 
@@ -53,14 +54,26 @@ public class CartActivity extends BaseActivity<ActivityCartBinding> {
         adapter = new CartAdapter();
         adapter.setOnQuantityChangeListener((cartItemId, newQuantity) -> {
             if (newQuantity <= 0) {
-                viewModel.removeFromCart(cartItemId);
+                // Hiển thị dialog xác nhận xóa
+                new MaterialAlertDialogBuilder(this)
+                        .setTitle("Xóa sản phẩm?")
+                        .setMessage("Bạn có muốn xóa sản phẩm này khỏi giỏ hàng?")
+                        .setPositiveButton("Xóa", (dialog, which) -> viewModel.removeFromCart(cartItemId))
+                        .setNegativeButton("Hủy", (dialog, which) -> adapter.notifyDataSetChanged()) // Reset lại UI
+                        .show();
             } else {
                 viewModel.updateQuantity(cartItemId, newQuantity);
             }
         });
 
         adapter.setOnDeleteListener(cartItemId -> {
-            viewModel.removeFromCart(cartItemId);
+            // Hiển thị dialog xác nhận xóa
+            new MaterialAlertDialogBuilder(this)
+                    .setTitle("Xóa sản phẩm?")
+                    .setMessage("Bạn có muốn xóa sản phẩm này khỏi giỏ hàng?")
+                    .setPositiveButton("Xóa", (dialog, which) -> viewModel.removeFromCart(cartItemId))
+                    .setNegativeButton("Hủy", null)
+                    .show();
         });
 
         binding.rvCartItems.setLayoutManager(new LinearLayoutManager(this));
@@ -81,6 +94,8 @@ public class CartActivity extends BaseActivity<ActivityCartBinding> {
                     hideLoading();
                     if (resource.getData() != null) {
                         displayCart(resource.getData());
+                    } else {
+                        showEmptyCart();
                     }
                     break;
 
@@ -94,8 +109,23 @@ public class CartActivity extends BaseActivity<ActivityCartBinding> {
         viewModel.getRemoveResult().observe(this, resource -> {
             if (resource == null) return;
 
+            if (resource.getStatus() == Resource.Status.LOADING) {
+                showToast("Đang xóa...");
+            }
+
             if (resource.getStatus() == Resource.Status.ERROR) {
                 handleError(resource.getMessage());
+            }
+            // Không cần làm gì khi SUCCESS, vì getCartLiveData sẽ tự động trigger và cập nhật
+        });
+
+        viewModel.getUpdateResult().observe(this, resource -> {
+            if (resource == null) return;
+
+            if (resource.getStatus() == Resource.Status.ERROR) {
+                handleError(resource.getMessage());
+                // Nếu lỗi, load lại giỏ hàng để reset
+                viewModel.loadCart();
             }
         });
     }
@@ -103,7 +133,7 @@ public class CartActivity extends BaseActivity<ActivityCartBinding> {
     private void displayCart(Cart cart) {
         Cart.CartSummary summary = cart.getSummary();
 
-        if (summary == null || summary.getTotalItems() == 0) {
+        if (summary == null || summary.getTotalItems() == 0 || cart.getItems() == null || cart.getItems().isEmpty()) {
             showEmptyCart();
         } else {
             showCartContent(cart, summary);
@@ -147,12 +177,20 @@ public class CartActivity extends BaseActivity<ActivityCartBinding> {
     @Override
     protected void showLoading() {
         binding.progressBar.setVisibility(View.VISIBLE);
-        binding.rvCartItems.setVisibility(View.GONE);
+        binding.layoutCartContent.setVisibility(View.GONE); // Ẩn cả layout content
+        binding.layoutEmpty.setVisibility(View.GONE);
     }
 
     @Override
     protected void hideLoading() {
         binding.progressBar.setVisibility(View.GONE);
-        binding.rvCartItems.setVisibility(View.VISIBLE);
+        // Không hiện gì ở đây, để logic displayCart quyết định
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // Load lại giỏ hàng khi quay lại từ màn hình Checkout (nếu đặt hàng thành công)
+        viewModel.loadCart();
     }
 }

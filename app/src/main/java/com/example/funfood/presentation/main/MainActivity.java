@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.Toast; // FIX 1: Thêm import để dùng cho thông báo (tùy chọn)
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.navigation.NavController;
@@ -14,6 +15,7 @@ import com.example.funfood.R;
 import com.example.funfood.data.preferences.UserPreferences;
 import com.example.funfood.databinding.ActivityMainBinding;
 import com.example.funfood.presentation.auth.LoginActivity;
+import com.example.funfood.presentation.cart.CartActivity; // FIX 2: Thêm import cho CartActivity
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 public class MainActivity extends AppCompatActivity {
@@ -64,6 +66,28 @@ public class MainActivity extends AppCompatActivity {
 
         if (id == R.id.action_logout) {
             logout();
+            return true;
+        }
+        // FIX 3: Thêm khối else if để xử lý sự kiện click vào giỏ hàng
+        else if (id == R.id.action_cart) {
+            Intent intent = new Intent(this, CartActivity.class);
+            startActivity(intent);
+            return true;
+        }
+        // FIX 4: Thêm xử lý cho các icon còn lại (nếu có)
+        else if (id == R.id.action_search) {
+            Toast.makeText(this, "Chức năng tìm kiếm chưa được cài đặt", Toast.LENGTH_SHORT).show();
+            // TODO: Mở màn hình tìm kiếm
+            return true;
+        }
+        else if (id == R.id.action_notifications) {
+            Toast.makeText(this, "Chức năng thông báo chưa được cài đặt", Toast.LENGTH_SHORT).show();
+            // TODO: Mở màn hình thông báo
+            return true;
+        }
+
+        // FIX 5: Thêm dòng này để xử lý click vào các item trên bottom nav (nếu bạn có)
+        if (NavigationUI.onNavDestinationSelected(item, navController)) {
             return true;
         }
 

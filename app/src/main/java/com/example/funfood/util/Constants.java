@@ -78,6 +78,7 @@ public class Constants {
     public static final String CURRENCY_SYMBOL = "đ";
     public static final String CURRENCY_FORMAT = "%,d đ";
 
+
     private Constants() {
         // Private constructor to prevent instantiation
     }

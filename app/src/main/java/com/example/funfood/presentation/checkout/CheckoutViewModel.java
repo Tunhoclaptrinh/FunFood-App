@@ -71,6 +71,7 @@ public class CheckoutViewModel extends AndroidViewModel {
      * Tạo đơn hàng mới
      */
     public void createOrder(OrderRepository.CreateOrderRequest request) {
+        orderResult.setValue(Resource.loading(null)); // Thêm trạng thái loading
         orderRepository.createOrder(request).observeForever(resource -> {
             orderResult.setValue(resource);
 
@@ -96,6 +97,8 @@ public class CheckoutViewModel extends AndroidViewModel {
     public void validatePromotion(String code, int orderValue, int deliveryFee) {
         // This would typically call an API to validate the promotion
         // For now, we'll just show a message
-        // You can implement this when backend endpoint is available
+        // Bạn sẽ cần triển khai logic này bằng cách gọi
+        // promotionRepository.validatePromotion(...) và cập nhật một LiveData mới
+        // Sau đó, CheckoutActivity sẽ observe LiveData đó để cập nhật UI
     }
 }

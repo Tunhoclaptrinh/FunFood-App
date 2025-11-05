@@ -139,7 +139,7 @@ public class ProductDetailActivity extends BaseActivity<ActivityProductDetailBin
             binding.btnAddToCart.setText("Hết hàng");
             binding.btnAddToCart.setEnabled(false);
         } else {
-            binding.btnAddToCart.setText("Thêm vào giỏ hàng (" + quantity + ")");
+            binding.btnAddToCart.setText("Thêm vào giỏ hàng"); // Đã xóa số lượng (quantity) khỏi nút
             binding.btnAddToCart.setEnabled(true);
         }
     }
@@ -150,11 +150,16 @@ public class ProductDetailActivity extends BaseActivity<ActivityProductDetailBin
     private void showQuantityDialog() {
         if (currentProduct == null) return;
 
+        if (!currentProduct.isAvailable()) {
+            showToast("Sản phẩm đã hết hàng");
+            return;
+        }
+
         View dialogView = getLayoutInflater().inflate(R.layout.dialog_quantity_picker, null);
         android.widget.NumberPicker numberPicker = dialogView.findViewById(R.id.number_picker);
 
         numberPicker.setMinValue(1);
-        numberPicker.setMaxValue(99);
+        numberPicker.setMaxValue(99); // Giới hạn số lượng
         numberPicker.setValue(quantity);
 
         new MaterialAlertDialogBuilder(this)
