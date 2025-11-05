@@ -6,13 +6,15 @@ import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
+import androidx.lifecycle.Observer; // <<< QUAN TRỌNG: Import
 
+import com.example.funfood.data.remote.dto.response.CartResponse; // <<< FIX: Import mới
 import com.example.funfood.data.repository.AddressRepository;
 import com.example.funfood.data.repository.CartRepository;
 import com.example.funfood.data.repository.OrderRepository;
 import com.example.funfood.data.repository.PromotionRepository;
 import com.example.funfood.domain.model.Address;
-import com.example.funfood.domain.model.Cart;
+// import com.example.funfood.domain.model.Cart; // <<< FIX: Xóa import cũ
 import com.example.funfood.domain.model.Order;
 import com.example.funfood.util.Resource;
 
@@ -25,7 +27,8 @@ public class CheckoutViewModel extends AndroidViewModel {
     private final AddressRepository addressRepository;
     private final PromotionRepository promotionRepository;
 
-    private final MutableLiveData<Resource<Cart>> cartLiveData = new MutableLiveData<>();
+    // FIX 1: Thay đổi kiểu dữ liệu
+    private final MutableLiveData<Resource<CartResponse>> cartLiveData = new MutableLiveData<>();
     private final MutableLiveData<Resource<List<Address>>> addressesLiveData = new MutableLiveData<>();
     private final MutableLiveData<Resource<Order>> orderResult = new MutableLiveData<>();
 
@@ -37,7 +40,8 @@ public class CheckoutViewModel extends AndroidViewModel {
         promotionRepository = new PromotionRepository(application);
     }
 
-    public LiveData<Resource<Cart>> getCartLiveData() {
+    // FIX 2: Thay đổi kiểu trả về
+    public LiveData<Resource<CartResponse>> getCartLiveData() {
         return cartLiveData;
     }
 
@@ -53,8 +57,19 @@ public class CheckoutViewModel extends AndroidViewModel {
      * Lấy giỏ hàng hiện tại
      */
     public void loadCart() {
-        cartRepository.getCart().observeForever(resource -> {
-            cartLiveData.setValue(resource);
+        // FIX 3: Sửa lỗi biên dịch VÀ fix memory leak
+        LiveData<Resource<CartResponse>> repoLiveData = cartRepository.getCart();
+        repoLiveData.observeForever(new Observer<Resource<CartResponse>>() {
+            @Override
+            public void onChanged(Resource<CartResponse> resource) {
+                // Đây là dòng 57, giờ đã hợp lệ
+                cartLiveData.setValue(resource);
+
+                // Tự hủy observer
+                if (resource.getStatus() != Resource.Status.LOADING) {
+                    repoLiveData.removeObserver(this);
+                }
+            }
         });
     }
 
@@ -62,8 +77,17 @@ public class CheckoutViewModel extends AndroidViewModel {
      * Lấy danh sách địa chỉ
      */
     public void loadAddresses() {
-        addressRepository.getAddresses().observeForever(resource -> {
-            addressesLiveData.setValue(resource);
+        // FIX 4: Sửa memory leak
+        LiveData<Resource<List<Address>>> repoLiveData = addressRepository.getAddresses();
+        repoLiveData.observeForever(new Observer<Resource<List<Address>>>() {
+            @Override
+            public void onChanged(Resource<List<Address>> resource) {
+                addressesLiveData.setValue(resource);
+                // Tự hủy observer
+                if (resource.getStatus() != Resource.Status.LOADING) {
+                    repoLiveData.removeObserver(this);
+                }
+            }
         });
     }
 
@@ -71,13 +95,23 @@ public class CheckoutViewModel extends AndroidViewModel {
      * Tạo đơn hàng mới
      */
     public void createOrder(OrderRepository.CreateOrderRequest request) {
-        orderResult.setValue(Resource.loading(null)); // Thêm trạng thái loading
-        orderRepository.createOrder(request).observeForever(resource -> {
-            orderResult.setValue(resource);
+        orderResult.setValue(Resource.loading(null));
 
-            if (resource.getStatus() == Resource.Status.SUCCESS) {
-                // Clear cart after successful order
-                clearCart();
+        // FIX 5: Sửa memory leak
+        LiveData<Resource<Order>> repoLiveData = orderRepository.createOrder(request);
+        repoLiveData.observeForever(new Observer<Resource<Order>>() {
+            @Override
+            public void onChanged(Resource<Order> resource) {
+                orderResult.setValue(resource);
+
+                if (resource.getStatus() == Resource.Status.SUCCESS) {
+                    clearCart(); // Xóa giỏ hàng sau khi đặt thành công
+                }
+
+                // Tự hủy observer
+                if (resource.getStatus() != Resource.Status.LOADING) {
+                    repoLiveData.removeObserver(this);
+                }
             }
         });
     }
@@ -86,8 +120,17 @@ public class CheckoutViewModel extends AndroidViewModel {
      * Xóa giỏ hàng
      */
     private void clearCart() {
-        cartRepository.clearCart().observeForever(resource -> {
-            // Cart cleared, no action needed
+        // FIX 6: Sửa memory leak
+        LiveData<Resource<Void>> repoLiveData = cartRepository.clearCart();
+        repoLiveData.observeForever(new Observer<Resource<Void>>() {
+            @Override
+            public void onChanged(Resource<Void> resource) {
+                // Đã xóa, không cần làm gì
+                // Tự hủy observer
+                if (resource.getStatus() != Resource.Status.LOADING) {
+                    repoLiveData.removeObserver(this);
+                }
+            }
         });
     }
 
@@ -95,10 +138,6 @@ public class CheckoutViewModel extends AndroidViewModel {
      * Validate promotion code
      */
     public void validatePromotion(String code, int orderValue, int deliveryFee) {
-        // This would typically call an API to validate the promotion
-        // For now, we'll just show a message
-        // Bạn sẽ cần triển khai logic này bằng cách gọi
-        // promotionRepository.validatePromotion(...) và cập nhật một LiveData mới
-        // Sau đó, CheckoutActivity sẽ observe LiveData đó để cập nhật UI
+        // ... (Giữ nguyên logic của bạn)
     }
 }

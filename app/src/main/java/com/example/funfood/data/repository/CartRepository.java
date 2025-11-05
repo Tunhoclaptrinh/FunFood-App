@@ -8,7 +8,10 @@ import androidx.lifecycle.MutableLiveData;
 import com.example.funfood.data.remote.RetrofitClient;
 import com.example.funfood.data.remote.api.CartApi;
 import com.example.funfood.data.remote.dto.ApiResponse;
-import com.example.funfood.domain.model.Cart;
+// FIX: Import lớp CartResponse mới
+import com.example.funfood.data.remote.dto.response.CartResponse;
+// FIX: Xóa import Cart cũ (nếu nó không dùng ở đâu khác)
+// import com.example.funfood.domain.model.Cart;
 import com.example.funfood.domain.model.CartItem;
 import com.example.funfood.util.Resource;
 
@@ -26,16 +29,20 @@ public class CartRepository {
 
     /**
      * Lấy giỏ hàng hiện tại
+     * FIX: Thay đổi kiểu trả về từ Cart sang CartResponse
      */
-    public LiveData<Resource<Cart>> getCart() {
-        MutableLiveData<Resource<Cart>> result = new MutableLiveData<>();
+    public LiveData<Resource<CartResponse>> getCart() {
+        // FIX: Thay đổi MutableLiveData sang CartResponse
+        MutableLiveData<Resource<CartResponse>> result = new MutableLiveData<>();
         result.setValue(Resource.loading(null));
 
-        cartApi.getCart().enqueue(new Callback<ApiResponse<Cart>>() {
+        // FIX: Thay đổi Callback sang CartResponse
+        cartApi.getCart().enqueue(new Callback<ApiResponse<CartResponse>>() {
             @Override
-            public void onResponse(Call<ApiResponse<Cart>> call, Response<ApiResponse<Cart>> response) {
+            public void onResponse(Call<ApiResponse<CartResponse>> call, Response<ApiResponse<CartResponse>> response) {
                 if (response.isSuccessful() && response.body() != null) {
-                    ApiResponse<Cart> apiResponse = response.body();
+                    // FIX: apiResponse giờ là kiểu CartResponse
+                    ApiResponse<CartResponse> apiResponse = response.body();
                     if (apiResponse.isSuccess()) {
                         result.setValue(Resource.success(apiResponse.getData()));
                     } else {
@@ -47,7 +54,7 @@ public class CartRepository {
             }
 
             @Override
-            public void onFailure(Call<ApiResponse<Cart>> call, Throwable t) {
+            public void onFailure(Call<ApiResponse<CartResponse>> call, Throwable t) {
                 result.setValue(Resource.error(t.getMessage(), null));
             }
         });

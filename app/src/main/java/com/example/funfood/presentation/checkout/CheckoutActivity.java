@@ -296,16 +296,5 @@ public class CheckoutActivity extends BaseActivity<ActivityCheckoutBinding> {
         binding.scrollView.setVisibility(View.VISIBLE);
     }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-        // Luôn tải lại địa chỉ khi quay lại màn hình này.
-        // Điều này đảm bảo nếu người dùng vừa SỬA địa chỉ,
-        // màn hình thanh toán sẽ hiển thị thông tin mới nhất.
-        viewModel.loadAddresses();
 
-        // (Bạn cũng có thể load lại cart nếu cần,
-        // nhưng load địa chỉ là bắt buộc cho kịch bản "sửa")
-        // viewModel.loadCart();
-    }
 }

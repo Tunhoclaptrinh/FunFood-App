@@ -6,27 +6,35 @@ import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
+import androidx.lifecycle.Observer; // Quan trọng!
 
+// FIX: Import lớp mới
+import com.example.funfood.data.remote.dto.response.CartResponse;
 import com.example.funfood.data.repository.CartRepository;
-import com.example.funfood.domain.model.Cart;
+// FIX: Xóa lớp Cart cũ
+// import com.example.funfood.domain.model.Cart;
 import com.example.funfood.domain.model.CartItem;
 import com.example.funfood.util.Resource;
 
 public class CartViewModel extends AndroidViewModel {
 
     private final CartRepository cartRepository;
-    private final MutableLiveData<Resource<Cart>> cartLiveData = new MutableLiveData<>();
+
+    // FIX 1: Thay đổi kiểu dữ liệu của LiveData
+    private final MutableLiveData<Resource<CartResponse>> cartLiveData = new MutableLiveData<>();
+
     private final MutableLiveData<Resource<CartItem>> addToCartResult = new MutableLiveData<>();
     private final MutableLiveData<Resource<Void>> removeResult = new MutableLiveData<>();
-    private final MutableLiveData<Resource<CartItem>> updateResult = new MutableLiveData<>(); // Thêm
+    private final MutableLiveData<Resource<CartItem>> updateResult = new MutableLiveData<>();
 
     public CartViewModel(@NonNull Application application) {
         super(application);
         this.cartRepository = new CartRepository(application);
-        loadCart();
+        // Lời gọi loadCart() trong constructor đã được xóa (đúng)
     }
 
-    public LiveData<Resource<Cart>> getCartLiveData() {
+    // FIX 2: Thay đổi kiểu trả về của getter
+    public LiveData<Resource<CartResponse>> getCartLiveData() {
         return cartLiveData;
     }
 
@@ -46,9 +54,22 @@ public class CartViewModel extends AndroidViewModel {
      * Lấy giỏ hàng
      */
     public void loadCart() {
-        cartLiveData.setValue(Resource.loading(null)); // Thêm loading
-        cartRepository.getCart().observeForever(resource -> {
-            cartLiveData.setValue(resource);
+        cartLiveData.setValue(Resource.loading(null));
+
+        // FIX 3: Cập nhật kiểu dữ liệu của repoLiveData
+        LiveData<Resource<CartResponse>> repoLiveData = cartRepository.getCart();
+
+        // FIX 4: Cập nhật kiểu dữ liệu của Observer
+        repoLiveData.observeForever(new Observer<Resource<CartResponse>>() {
+            @Override
+            public void onChanged(Resource<CartResponse> resource) {
+                cartLiveData.setValue(resource);
+
+                // Giữ nguyên fix memory leak
+                if (resource.getStatus() != Resource.Status.LOADING) {
+                    repoLiveData.removeObserver(this);
+                }
+            }
         });
     }
 
@@ -58,11 +79,17 @@ public class CartViewModel extends AndroidViewModel {
     public void addToCart(int productId, int quantity) {
         addToCartResult.setValue(Resource.loading(null));
 
-        cartRepository.addToCart(productId, quantity).observeForever(resource -> {
-            addToCartResult.setValue(resource);
-            if (resource.getStatus() == Resource.Status.SUCCESS) {
-                // Reload cart after successful add
-                loadCart();
+        LiveData<Resource<CartItem>> repoLiveData = cartRepository.addToCart(productId, quantity);
+        repoLiveData.observeForever(new Observer<Resource<CartItem>>() {
+            @Override
+            public void onChanged(Resource<CartItem> resource) {
+                addToCartResult.setValue(resource);
+                if (resource.getStatus() == Resource.Status.SUCCESS) {
+                    loadCart();
+                }
+                if (resource.getStatus() != Resource.Status.LOADING) {
+                    repoLiveData.removeObserver(this);
+                }
             }
         });
     }
@@ -72,10 +99,18 @@ public class CartViewModel extends AndroidViewModel {
      */
     public void updateQuantity(int cartItemId, int newQuantity) {
         updateResult.setValue(Resource.loading(null));
-        cartRepository.updateCartItem(cartItemId, newQuantity).observeForever(resource -> {
-            updateResult.setValue(resource);
-            if (resource.getStatus() == Resource.Status.SUCCESS) {
-                loadCart();
+
+        LiveData<Resource<CartItem>> repoLiveData = cartRepository.updateCartItem(cartItemId, newQuantity);
+        repoLiveData.observeForever(new Observer<Resource<CartItem>>() {
+            @Override
+            public void onChanged(Resource<CartItem> resource) {
+                updateResult.setValue(resource);
+                if (resource.getStatus() == Resource.Status.SUCCESS) {
+                    loadCart();
+                }
+                if (resource.getStatus() != Resource.Status.LOADING) {
+                    repoLiveData.removeObserver(this);
+                }
             }
         });
     }
@@ -86,10 +121,17 @@ public class CartViewModel extends AndroidViewModel {
     public void removeFromCart(int cartItemId) {
         removeResult.setValue(Resource.loading(null));
 
-        cartRepository.removeFromCart(cartItemId).observeForever(resource -> {
-            removeResult.setValue(resource);
-            if (resource.getStatus() == Resource.Status.SUCCESS) {
-                loadCart();
+        LiveData<Resource<Void>> repoLiveData = cartRepository.removeFromCart(cartItemId);
+        repoLiveData.observeForever(new Observer<Resource<Void>>() {
+            @Override
+            public void onChanged(Resource<Void> resource) {
+                removeResult.setValue(resource);
+                if (resource.getStatus() == Resource.Status.SUCCESS) {
+                    loadCart();
+                }
+                if (resource.getStatus() != Resource.Status.LOADING) {
+                    repoLiveData.removeObserver(this);
+                }
             }
         });
     }
@@ -98,9 +140,16 @@ public class CartViewModel extends AndroidViewModel {
      * Xóa giỏ hàng
      */
     public void clearCart() {
-        cartRepository.clearCart().observeForever(resource -> {
-            if (resource.getStatus() == Resource.Status.SUCCESS) {
-                loadCart();
+        LiveData<Resource<Void>> repoLiveData = cartRepository.clearCart();
+        repoLiveData.observeForever(new Observer<Resource<Void>>() {
+            @Override
+            public void onChanged(Resource<Void> resource) {
+                if (resource.getStatus() == Resource.Status.SUCCESS) {
+                    loadCart();
+                }
+                if (resource.getStatus() != Resource.Status.LOADING) {
+                    repoLiveData.removeObserver(this);
+                }
             }
         });
     }

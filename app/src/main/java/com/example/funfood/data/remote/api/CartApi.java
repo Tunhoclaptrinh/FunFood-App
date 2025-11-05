@@ -1,7 +1,7 @@
 package com.example.funfood.data.remote.api;
 
 import com.example.funfood.data.remote.dto.ApiResponse;
-import com.example.funfood.domain.model.Cart;
+import com.example.funfood.data.remote.dto.response.CartResponse;
 import com.example.funfood.domain.model.CartItem;
 
 import retrofit2.Call;
@@ -15,7 +15,7 @@ import retrofit2.http.Path;
 public interface CartApi {
 
     @GET("cart")
-    Call<ApiResponse<Cart>> getCart();
+    Call<ApiResponse<CartResponse>> getCart();
 
     @POST("cart")
     Call<ApiResponse<CartItem>> addToCart(@Body AddToCartRequest request);
