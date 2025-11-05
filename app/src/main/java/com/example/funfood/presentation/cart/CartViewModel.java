@@ -6,7 +6,7 @@ import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
-import androidx.lifecycle.Observer; // Quan trọng!
+import androidx.lifecycle.Observer; // <<< QUAN TRỌNG: Import
 
 // FIX: Import lớp mới
 import com.example.funfood.data.remote.dto.response.CartResponse;
@@ -30,7 +30,7 @@ public class CartViewModel extends AndroidViewModel {
     public CartViewModel(@NonNull Application application) {
         super(application);
         this.cartRepository = new CartRepository(application);
-        // Lời gọi loadCart() trong constructor đã được xóa (đúng)
+        // Xóa loadCart() khỏi constructor (để fix lỗi NullPointerException)
     }
 
     // FIX 2: Thay đổi kiểu trả về của getter
@@ -56,16 +56,16 @@ public class CartViewModel extends AndroidViewModel {
     public void loadCart() {
         cartLiveData.setValue(Resource.loading(null));
 
-        // FIX 3: Cập nhật kiểu dữ liệu của repoLiveData
+        // FIX 3: Cập nhật kiểu dữ liệu
         LiveData<Resource<CartResponse>> repoLiveData = cartRepository.getCart();
 
-        // FIX 4: Cập nhật kiểu dữ liệu của Observer
+        // FIX 4: Sửa lỗi Memory Leak
         repoLiveData.observeForever(new Observer<Resource<CartResponse>>() {
             @Override
             public void onChanged(Resource<CartResponse> resource) {
                 cartLiveData.setValue(resource);
 
-                // Giữ nguyên fix memory leak
+                // Tự động hủy observe sau khi nhận được kết quả
                 if (resource.getStatus() != Resource.Status.LOADING) {
                     repoLiveData.removeObserver(this);
                 }
@@ -79,6 +79,7 @@ public class CartViewModel extends AndroidViewModel {
     public void addToCart(int productId, int quantity) {
         addToCartResult.setValue(Resource.loading(null));
 
+        // FIX: Sửa lỗi Memory Leak
         LiveData<Resource<CartItem>> repoLiveData = cartRepository.addToCart(productId, quantity);
         repoLiveData.observeForever(new Observer<Resource<CartItem>>() {
             @Override
@@ -100,6 +101,7 @@ public class CartViewModel extends AndroidViewModel {
     public void updateQuantity(int cartItemId, int newQuantity) {
         updateResult.setValue(Resource.loading(null));
 
+        // FIX: Sửa lỗi Memory Leak
         LiveData<Resource<CartItem>> repoLiveData = cartRepository.updateCartItem(cartItemId, newQuantity);
         repoLiveData.observeForever(new Observer<Resource<CartItem>>() {
             @Override
@@ -121,6 +123,7 @@ public class CartViewModel extends AndroidViewModel {
     public void removeFromCart(int cartItemId) {
         removeResult.setValue(Resource.loading(null));
 
+        // FIX: Sửa lỗi Memory Leak
         LiveData<Resource<Void>> repoLiveData = cartRepository.removeFromCart(cartItemId);
         repoLiveData.observeForever(new Observer<Resource<Void>>() {
             @Override
@@ -140,6 +143,7 @@ public class CartViewModel extends AndroidViewModel {
      * Xóa giỏ hàng
      */
     public void clearCart() {
+        // FIX: Sửa lỗi Memory Leak
         LiveData<Resource<Void>> repoLiveData = cartRepository.clearCart();
         repoLiveData.observeForever(new Observer<Resource<Void>>() {
             @Override

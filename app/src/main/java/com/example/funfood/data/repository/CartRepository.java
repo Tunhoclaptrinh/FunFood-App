@@ -10,7 +10,7 @@ import com.example.funfood.data.remote.api.CartApi;
 import com.example.funfood.data.remote.dto.ApiResponse;
 // FIX: Import lớp CartResponse mới
 import com.example.funfood.data.remote.dto.response.CartResponse;
-// FIX: Xóa import Cart cũ (nếu nó không dùng ở đâu khác)
+// FIX: Xóa import Cart cũ
 // import com.example.funfood.domain.model.Cart;
 import com.example.funfood.domain.model.CartItem;
 import com.example.funfood.util.Resource;

@@ -8,10 +8,10 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.example.funfood.databinding.ActivityCartBinding;
-// FIX: Xóa import Cart cũ
-// import com.example.funfood.domain.model.Cart;
 // FIX: Import CartResponse mới
 import com.example.funfood.data.remote.dto.response.CartResponse;
+// FIX: Xóa import Cart cũ
+// import com.example.funfood.domain.model.Cart;
 import com.example.funfood.presentation.base.BaseActivity;
 import com.example.funfood.presentation.checkout.CheckoutActivity;
 import com.example.funfood.presentation.cart.adapter.CartAdapter;
@@ -23,7 +23,6 @@ public class CartActivity extends BaseActivity<ActivityCartBinding> {
 
     private CartViewModel viewModel;
     private CartAdapter adapter;
-    // private boolean isDataObserved = false; // Chúng ta sẽ dùng logic onResume() đơn giản hơn
 
     @Override
     protected ActivityCartBinding getViewBinding() {
@@ -44,26 +43,28 @@ public class CartActivity extends BaseActivity<ActivityCartBinding> {
         binding.toolbar.setNavigationOnClickListener(v -> finish());
 
         // FIX: BƯỚC 1: Luôn luôn cài đặt RecyclerView TRƯỚC
+        // (Sửa lỗi NullPointerException)
         setupRecyclerView();
 
         // Buttons
         binding.btnCheckout.setOnClickListener(v -> proceedToCheckout());
         binding.btnContinueShopping.setOnClickListener(v -> finish());
 
-        // FIX: BƯỚC 2: XÓA loadCart() ở đây. onResume() sẽ gọi.
+        // FIX: BƯỚC 2: XÓA loadCart() ở đây.
+        // onResume() sẽ gọi, tránh bị double-load
         // viewModel.loadCart();
     }
-
     private void setupRecyclerView() {
+        // Adapter được khởi tạo ở đây (adapter không còn null)
         adapter = new CartAdapter();
-
         adapter.setOnQuantityChangeListener((cartItemId, newQuantity) -> {
             if (newQuantity <= 0) {
+                // Hiển thị dialog xác nhận xóa
                 new MaterialAlertDialogBuilder(this)
                         .setTitle("Xóa sản phẩm?")
                         .setMessage("Bạn có muốn xóa sản phẩm này khỏi giỏ hàng?")
                         .setPositiveButton("Xóa", (dialog, which) -> viewModel.removeFromCart(cartItemId))
-                        .setNegativeButton("Hủy", (dialog, which) -> adapter.notifyDataSetChanged())
+                        .setNegativeButton("Hủy", (dialog, which) -> adapter.notifyDataSetChanged()) // Reset lại UI
                         .show();
             } else {
                 viewModel.updateQuantity(cartItemId, newQuantity);
@@ -71,6 +72,7 @@ public class CartActivity extends BaseActivity<ActivityCartBinding> {
         });
 
         adapter.setOnDeleteListener(cartItemId -> {
+            // Hiển thị dialog xác nhận xóa
             new MaterialAlertDialogBuilder(this)
                     .setTitle("Xóa sản phẩm?")
                     .setMessage("Bạn có muốn xóa sản phẩm này khỏi giỏ hàng?")
@@ -97,7 +99,6 @@ public class CartActivity extends BaseActivity<ActivityCartBinding> {
                 case SUCCESS:
                     hideLoading();
                     if (resource.getData() != null) {
-                        // Đây là dòng 125. Giờ nó đã đúng kiểu dữ liệu.
                         displayCart(resource.getData());
                     } else {
                         showEmptyCart();
@@ -148,8 +149,7 @@ public class CartActivity extends BaseActivity<ActivityCartBinding> {
         binding.layoutCartContent.setVisibility(View.VISIBLE);
 
         if (cart.getItems() != null) {
-            // Dùng adapter.setItems() mà bạn đã tạo (giả sử nó nhận List<CartItem>)
-            // Nếu bạn dùng DiffUtil/submitList, hãy dùng adapter.submitList(cart.getItems());
+            // Dòng này (tương đương dòng 128) giờ đã an toàn
             adapter.setItems(cart.getItems());
         }
 
@@ -172,6 +172,7 @@ public class CartActivity extends BaseActivity<ActivityCartBinding> {
             showNetworkError();
             return;
         }
+
         Intent intent = new Intent(this, CheckoutActivity.class);
         startActivity(intent);
     }
@@ -179,19 +180,21 @@ public class CartActivity extends BaseActivity<ActivityCartBinding> {
     @Override
     protected void showLoading() {
         binding.progressBar.setVisibility(View.VISIBLE);
-        binding.layoutCartContent.setVisibility(View.GONE);
+        binding.layoutCartContent.setVisibility(View.GONE); // Ẩn cả layout content
         binding.layoutEmpty.setVisibility(View.GONE);
     }
 
     @Override
     protected void hideLoading() {
         binding.progressBar.setVisibility(View.GONE);
+        // Không hiện gì ở đây, để logic displayCart quyết định
     }
 
     @Override
     protected void onResume() {
         super.onResume();
         // FIX: BƯỚC 3: Chỉ cần gọi loadCart() 1 lần tại đây.
+        // Nó sẽ chạy khi vào Activity và khi quay lại (từ Checkout)
         viewModel.loadCart();
     }
 }

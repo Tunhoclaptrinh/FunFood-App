@@ -10,7 +10,10 @@ import androidx.lifecycle.ViewModelProvider;
 
 import com.example.funfood.databinding.ActivityCheckoutBinding;
 import com.example.funfood.data.repository.OrderRepository;
-import com.example.funfood.domain.model.Cart;
+// FIX: Import lớp CartResponse mới
+import com.example.funfood.data.remote.dto.response.CartResponse;
+// FIX: Xóa import Cart cũ
+// import com.example.funfood.domain.model.Cart;
 import com.example.funfood.domain.model.Address;
 import com.example.funfood.presentation.address.AddressListActivity;
 import com.example.funfood.presentation.base.BaseActivity;
@@ -25,7 +28,8 @@ import java.util.List;
 public class CheckoutActivity extends BaseActivity<ActivityCheckoutBinding> {
 
     private CheckoutViewModel viewModel;
-    private Cart currentCart;
+    // FIX 1: Thay đổi kiểu của biến thành viên
+    private CartResponse currentCart;
     private Address selectedAddress;
     private String selectedPaymentMethod = "cash";
 
@@ -92,7 +96,7 @@ public class CheckoutActivity extends BaseActivity<ActivityCheckoutBinding> {
 
     @Override
     protected void observeData() {
-        // Cart Data
+        // FIX 2: Observer giờ sẽ nhận Resource<CartResponse>
         viewModel.getCartLiveData().observe(this, resource -> {
             if (resource == null) return;
 
@@ -103,6 +107,7 @@ public class CheckoutActivity extends BaseActivity<ActivityCheckoutBinding> {
                 case SUCCESS:
                     hideLoading();
                     if (resource.getData() != null) {
+                        // Đây là dòng 106, giờ đã hợp lệ!
                         currentCart = resource.getData();
                         displayCartSummary(resource.getData());
 
@@ -130,7 +135,6 @@ public class CheckoutActivity extends BaseActivity<ActivityCheckoutBinding> {
                     // Xử lý trường hợp người dùng chưa có địa chỉ nào
                     binding.tvSelectedAddress.setText("Vui lòng thêm địa chỉ");
                     showToast("Vui lòng thêm địa chỉ giao hàng");
-                    // TODO: Bạn có thể điều hướng họ đến AddAddressActivity ở đây
                 }
             } else if (resource.getStatus() == Resource.Status.ERROR) {
                 handleError("Không thể tải danh sách địa chỉ: " + resource.getMessage());
@@ -162,9 +166,11 @@ public class CheckoutActivity extends BaseActivity<ActivityCheckoutBinding> {
         });
     }
 
-    private void displayCartSummary(Cart cart) {
+    // FIX 3: Thay đổi tham số của hàm
+    private void displayCartSummary(CartResponse cart) {
         if (cart.getSummary() != null) {
-            Cart.CartSummary summary = cart.getSummary();
+            // FIX 4: Sử dụng CartSummary từ CartResponse
+            CartResponse.CartSummary summary = cart.getSummary();
             binding.tvSubtotal.setText(CurrencyUtil.formatCurrency(summary.getSubtotal()));
             binding.tvDeliveryFee.setText(CurrencyUtil.formatCurrency(summary.getDeliveryFee()));
 
@@ -210,6 +216,7 @@ public class CheckoutActivity extends BaseActivity<ActivityCheckoutBinding> {
             return;
         }
 
+        // (Phần logic này giờ đã đúng vì currentCart là CartResponse)
         if (currentCart == null || currentCart.getSummary() == null) {
             showToast("Không thể áp dụng mã khi giỏ hàng trống");
             return;
@@ -221,8 +228,6 @@ public class CheckoutActivity extends BaseActivity<ActivityCheckoutBinding> {
                 currentCart.getSummary().getDeliveryFee()
         );
 
-        // TODO: Observe LiveData từ ViewModel để
-        // hiển thị kết quả validate (thành công/thất bại)
         showToast("Đang áp dụng mã (logic chưa hoàn thiện)...");
     }
 
@@ -233,6 +238,7 @@ public class CheckoutActivity extends BaseActivity<ActivityCheckoutBinding> {
             return;
         }
 
+        // (Phần logic này giờ đã đúng vì currentCart là CartResponse)
         if (currentCart == null || currentCart.getItems() == null || currentCart.getItems().isEmpty()) {
             showToast("Giỏ hàng trống");
             return;
@@ -250,6 +256,7 @@ public class CheckoutActivity extends BaseActivity<ActivityCheckoutBinding> {
         String promoCode = binding.etPromotionCode.getText().toString().trim();
 
         // Get first restaurant from cart items
+        // (Phần logic này giờ đã đúng vì currentCart là CartResponse)
         if (currentCart.getItems().get(0).getRestaurant() == null) {
             handleError("Lỗi dữ liệu giỏ hàng (thiếu thông tin nhà hàng)");
             return;
@@ -258,6 +265,7 @@ public class CheckoutActivity extends BaseActivity<ActivityCheckoutBinding> {
 
         // Create order request
         List<OrderRepository.OrderItem> orderItems = new ArrayList<>();
+        // (Đây là CartItem, không phải CartResponse, nên nó đúng)
         for (com.example.funfood.domain.model.CartItem item : currentCart.getItems()) {
             orderItems.add(new OrderRepository.OrderItem(item.getProductId(), item.getQuantity()));
         }
@@ -296,5 +304,13 @@ public class CheckoutActivity extends BaseActivity<ActivityCheckoutBinding> {
         binding.scrollView.setVisibility(View.VISIBLE);
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // Luôn tải lại địa chỉ khi quay lại màn hình này.
+        viewModel.loadAddresses();
 
+        // Bạn cũng có thể load lại cart nếu cần (CartActivity đã làm điều này)
+        viewModel.loadCart();
+    }
 }

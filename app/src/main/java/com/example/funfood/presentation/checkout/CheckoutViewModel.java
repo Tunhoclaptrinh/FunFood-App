@@ -62,7 +62,7 @@ public class CheckoutViewModel extends AndroidViewModel {
         repoLiveData.observeForever(new Observer<Resource<CartResponse>>() {
             @Override
             public void onChanged(Resource<CartResponse> resource) {
-                // Đây là dòng 57, giờ đã hợp lệ
+                // Đây là dòng 57
                 cartLiveData.setValue(resource);
 
                 // Tự hủy observer
@@ -137,7 +137,7 @@ public class CheckoutViewModel extends AndroidViewModel {
     /**
      * Validate promotion code
      */
-    public void validatePromotion(String code, int orderValue, int deliveryFee) {
+    public void validatePromotion(String code, double orderValue, double deliveryFee) {
         // ... (Giữ nguyên logic của bạn)
     }
 }
