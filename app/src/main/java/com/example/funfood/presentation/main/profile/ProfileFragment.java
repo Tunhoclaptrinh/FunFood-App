@@ -35,9 +35,7 @@ public class ProfileFragment extends BaseFragment<FragmentProfileBinding> {
         loadUserProfile();
 
         binding.buttonLogout.setOnClickListener(v -> {
-            userPreferences.logout();
-            // (Thêm logic chuyển về màn hình Login)
-            showToast("Đã đăng xuất");
+            viewModel.logout();
         });
 
         // Gán sự kiện click cho nút Sửa Profile
@@ -70,11 +68,49 @@ public class ProfileFragment extends BaseFragment<FragmentProfileBinding> {
         binding.layoutAbout.setOnClickListener(v -> showToast("Chức năng 'Về FunFood' đang được phát triển!"));
     }
 
-    // Cung cấp phương thức observeData (hiện tại chưa làm gì)
+    // Cung cấp phương thức observeData
     @Override
     protected void observeData() {
-        // TODO: Thêm code lắng nghe LiveData từ ViewModel tại đây
-        // Ví dụ: viewModel.getUserLiveData().observe(getViewLifecycleOwner(), user -> { ... });
+
+        // 1. Lắng nghe sự kiện logout
+        viewModel.getLogoutEvent().observe(getViewLifecycleOwner(), event -> {
+            Boolean shouldLogout = event.getContentIfNotHandled();
+            if (shouldLogout != null && shouldLogout) {
+
+                // ViewModel đã xử lý xong (xóa data),
+                // giờ Fragment thực hiện điều hướng (chuyển màn hình)
+
+                Intent intent = new Intent(requireContext(), com.example.funfood.presentation.auth.LoginActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                startActivity(intent);
+
+                // Đóng MainActivity (màn hình chính)
+                requireActivity().finish();
+            }
+        });
+
+        // 2. Lắng nghe thông tin người dùng (thay cho hàm loadUserProfile())
+        viewModel.getUserLiveData().observe(getViewLifecycleOwner(), user -> {
+            if (user != null) {
+                binding.tvName.setText(user.getName());
+                binding.tvEmail.setText(user.getEmail());
+            }
+        });
+
+        // 3. Lắng nghe thông báo (lỗi hoặc thành công)
+        viewModel.getSuccessMessage().observe(getViewLifecycleOwner(), message -> {
+            if (message != null && !message.isEmpty()) {
+                showToast(message);
+                viewModel.clearMessages(); // Xóa thông báo sau khi hiển thị
+            }
+        });
+
+        viewModel.getErrorMessage().observe(getViewLifecycleOwner(), message -> {
+            if (message != null && !message.isEmpty()) {
+                showToast(message);
+                viewModel.clearMessages(); // Xóa thông báo sau khi hiển thị
+            }
+        });
     }
 
     private void loadUserProfile() {
