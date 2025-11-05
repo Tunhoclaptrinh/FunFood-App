@@ -1,5 +1,6 @@
 package com.example.funfood.presentation.notification;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -15,6 +16,8 @@ import com.example.funfood.R;
 import com.example.funfood.databinding.ActivityNotificationBinding;
 import com.example.funfood.domain.model.Notification;
 import com.example.funfood.presentation.notification.adapter.NotificationAdapter;
+import com.example.funfood.presentation.order.OrderDetailActivity;
+import com.example.funfood.util.Constants;
 import com.example.funfood.util.Resource;
 
 public class NotificationActivity extends AppCompatActivity implements NotificationAdapter.OnNotificationClickListener {
@@ -119,7 +122,34 @@ public class NotificationActivity extends AppCompatActivity implements Notificat
     @Override
     public void onItemClick(Notification notification) {
         viewModel.markAsRead(notification);
-        // TODO: Navigate to order detail or promotion detail
+        // Điều hướng dựa trên loại thông báo
+        String type = notification.getType();
+        if (type == null) return; // Đảm bảo an toàn
+
+        switch (type) {
+            case "order":
+                // Điều hướng đến Chi tiết đơn hàng
+                Intent orderIntent = new Intent(this, OrderDetailActivity.class);
+                orderIntent.putExtra(Constants.KEY_ORDER_ID, notification.getRefId());
+                startActivity(orderIntent);
+                break;
+
+            case "promotion":
+                // TODO: Điều hướng đến màn hình Khuyến mãi chi tiết (nếu có)
+                // Ví dụ:
+                // Intent promoIntent = new Intent(this, PromotionDetailActivity.class);
+                // promoIntent.putExtra(Constants.KEY_PROMOTION_ID, notification.getRefId());
+                // startActivity(promoIntent);
+                Toast.makeText(this, "Mở chi tiết khuyến mãi #" + notification.getRefId(), Toast.LENGTH_SHORT).show();
+                break;
+
+            case "system":
+            case "favorite":
+            default:
+                // Không cần điều hướng, hoặc hiển thị thông báo chung
+                Toast.makeText(this, "Thông báo hệ thống.", Toast.LENGTH_SHORT).show();
+                break;
+        }
     }
 
     @Override

@@ -22,6 +22,9 @@ import androidx.annotation.NonNull;
 import com.example.funfood.R;
 import com.example.funfood.presentation.cart.CartActivity;
 
+import android.content.Intent;
+import android.net.Uri;
+
 public class RestaurantDetailActivity extends BaseActivity<ActivityRestaurantDetailBinding> {
 
     private RestaurantDetailViewModel viewModel;
@@ -165,8 +168,9 @@ public class RestaurantDetailActivity extends BaseActivity<ActivityRestaurantDet
             binding.tvPhone.setText(restaurant.getPhone());
             binding.layoutPhone.setVisibility(View.VISIBLE);
             binding.layoutPhone.setOnClickListener(v -> {
-                // TODO: Make phone call
-                showToast("Gọi: " + restaurant.getPhone());
+                Intent intent = new Intent(Intent.ACTION_DIAL);
+                intent.setData(Uri.parse("tel:" + restaurant.getPhone()));
+                startActivity(intent);
             });
         } else {
             binding.layoutPhone.setVisibility(View.GONE);
