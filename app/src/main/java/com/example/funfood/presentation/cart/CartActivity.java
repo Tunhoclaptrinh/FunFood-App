@@ -13,6 +13,7 @@ import com.example.funfood.presentation.base.BaseActivity;
 import com.example.funfood.presentation.checkout.CheckoutActivity;
 import com.example.funfood.presentation.cart.adapter.CartAdapter;
 import com.example.funfood.util.CurrencyUtil;
+import com.example.funfood.util.Resource;
 
 public class CartActivity extends BaseActivity<ActivityCartBinding> {
 
@@ -43,6 +44,9 @@ public class CartActivity extends BaseActivity<ActivityCartBinding> {
         // Buttons
         binding.btnCheckout.setOnClickListener(v -> proceedToCheckout());
         binding.btnContinueShopping.setOnClickListener(v -> finish());
+
+        // Load cart
+        viewModel.loadCart();
     }
 
     private void setupRecyclerView() {
