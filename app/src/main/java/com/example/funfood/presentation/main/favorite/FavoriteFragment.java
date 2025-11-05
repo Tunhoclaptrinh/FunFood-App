@@ -23,12 +23,12 @@ import com.example.funfood.util.Resource;
 
 import java.util.List;
 
-// --- IMPORTS CẦN THÊM ĐỂ BỎ HILT ---
+// --- Imports cần thiết để khởi tạo ViewModel thủ công ---
 import androidx.lifecycle.ViewModel;
 import com.example.funfood.data.remote.RetrofitClient;
 import com.example.funfood.data.remote.api.FavoriteApi;
 import com.example.funfood.data.repository.FavoriteRepository;
-// --- KẾT THÚC IMPORTS ---
+// --- Kết thúc Imports ---
 
 
 public class FavoriteFragment extends BaseFragment<FragmentFavoriteBinding> {
@@ -36,10 +36,10 @@ public class FavoriteFragment extends BaseFragment<FragmentFavoriteBinding> {
     private FavoriteViewModel viewModel;
     private FavoriteAdapter favoriteAdapter;
 
-    // --- FACTORY ĐỂ BỎ HILT ---
+    // --- FACTORY ĐỂ KHỞI TẠO VIEWMODEL ---
     /**
-     * Factory tùy chỉnh để khởi tạo FavoriteViewModel bằng tay
-     * thay vì dùng Hilt.
+     * Factory tùy chỉnh để khởi tạo FavoriteViewModel bằng tay.
+     * Cần thiết vì bạn không dùng Hilt cho Fragment này.
      */
     private static class FavoriteViewModelFactory implements ViewModelProvider.Factory {
         private final FavoriteRepository repository;
@@ -68,30 +68,30 @@ public class FavoriteFragment extends BaseFragment<FragmentFavoriteBinding> {
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
-
-        // --- BỎ HILT - KHỞI TẠO VIEWMODEL MANUAL ---
+        // --- ĐÂY LÀ CHỖ SỬA LỖI ---
+        // BẮT BUỘC phải khởi tạo viewModel TRƯỚC khi gọi super.onViewCreated()
+        // vì super.onViewCreated() sẽ gọi observeData() và setupViews()
 
         // 1. Lấy RetrofitClient singleton
-        // Sử dụng applicationContext để đảm bảo an toàn
         RetrofitClient retrofitClient = RetrofitClient.getInstance(requireContext().getApplicationContext());
-
-        // 2. Tạo FavoriteApi từ RetrofitClient
+        // 2. Tạo FavoriteApi
         FavoriteApi favoriteApi = retrofitClient.createService(FavoriteApi.class);
-
         // 3. Tạo FavoriteRepository
         FavoriteRepository favoriteRepository = new FavoriteRepository(favoriteApi);
-
-        // 4. Tạo ViewModelFactory tùy chỉnh
+        // 4. Tạo ViewModelFactory
         FavoriteViewModelFactory factory = new FavoriteViewModelFactory(favoriteRepository);
-
-        // 5. Khởi tạo ViewModel qua Factory (thay vì Hilt)
+        // 5. Khởi tạo ViewModel qua Factory
         viewModel = new ViewModelProvider(this, factory).get(FavoriteViewModel.class);
 
-        // --- KẾT THÚC BỎ HILT ---
+        // --- HẾT CHỖ SỬA LỖI ---
 
-        setupViews();
-        observeData();
+        // Bây giờ mới gọi super, lúc này 'viewModel' đã được khởi tạo và không còn null
+        super.onViewCreated(view, savedInstanceState);
+
+        // Các dòng này trong file gốc của bạn bị lặp lại,
+        // vì BaseFragment đã gọi chúng rồi.
+        // setupViews();
+        // observeData();
     }
 
     @Override
@@ -108,14 +108,13 @@ public class FavoriteFragment extends BaseFragment<FragmentFavoriteBinding> {
             public void onItemClick(Restaurant restaurant) {
                 // Chuyển sang màn hình chi tiết nhà hàng
                 Intent intent = new Intent(requireContext(), RestaurantDetailActivity.class);
-                // Sử dụng hằng số (Constants) mà RestaurantDetailActivity yêu cầu
                 intent.putExtra(Constants.KEY_RESTAURANT_ID, restaurant.getId());
                 startActivity(intent);
             }
 
             @Override
             public void onRemoveClick(Favorite favorite) {
-                // Gọi ViewModel để xóa
+                // Gọi ViewModel để xóa (an toàn vì viewModel đã được khởi tạo)
                 viewModel.removeFavorite(favorite);
             }
         });
@@ -124,6 +123,7 @@ public class FavoriteFragment extends BaseFragment<FragmentFavoriteBinding> {
     @Override
     protected void observeData() {
         // 1. Observe danh sách yêu thích
+        // Dòng này sẽ KHÔNG BỊ CRASH nữa vì 'viewModel' không còn null
         viewModel.favorites.observe(getViewLifecycleOwner(), resource -> {
             if (resource == null) return;
 
@@ -181,6 +181,9 @@ public class FavoriteFragment extends BaseFragment<FragmentFavoriteBinding> {
     public void onResume() {
         super.onResume();
         // Tải lại dữ liệu mỗi khi người dùng quay lại tab này
-        viewModel.fetchFavorites();
+        // Đảm bảo viewModel đã được khởi tạo trước khi gọi
+        if (viewModel != null) {
+            viewModel.fetchFavorites();
+        }
     }
 }
