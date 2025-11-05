@@ -12,6 +12,7 @@ import com.example.funfood.databinding.ActivityCheckoutBinding;
 import com.example.funfood.data.repository.OrderRepository;
 import com.example.funfood.domain.model.Cart;
 import com.example.funfood.domain.model.Address;
+import com.example.funfood.presentation.address.AddressListActivity;
 import com.example.funfood.presentation.base.BaseActivity;
 import com.example.funfood.presentation.order.OrderDetailActivity;
 import com.example.funfood.util.CurrencyUtil;
@@ -53,7 +54,11 @@ public class CheckoutActivity extends BaseActivity<ActivityCheckoutBinding> {
         setupPaymentMethodSpinner();
 
         // Select address
-        binding.btnSelectAddress.setOnClickListener(v -> viewModel.loadAddresses());
+        binding.btnSelectAddress.setOnClickListener(v -> {
+            // Chuyển người dùng đến màn hình quản lý/sửa địa chỉ
+            Intent intent = new Intent(this, AddressListActivity.class);
+            startActivity(intent);
+        });
 
         // Promotion code
         binding.btnApplyPromotion.setOnClickListener(v -> applyPromotion());
@@ -116,17 +121,16 @@ public class CheckoutActivity extends BaseActivity<ActivityCheckoutBinding> {
         viewModel.getAddressesLiveData().observe(this, resource -> {
             if (resource == null) return;
 
-            // Chỉ xử lý khi SUCCESS
-            if (resource.getStatus() == Resource.Status.SUCCESS && resource.getData() != null) {
-                List<Address> addresses = resource.getData();
-                if (selectedAddress == null && !addresses.isEmpty()) {
-                    // Tự động chọn địa chỉ đầu tiên hoặc địa chỉ mặc định
-                    // Ở đây, chúng ta chọn cái đầu tiên
-                    selectedAddress = addresses.get(0);
+            if (resource.getStatus() == Resource.Status.SUCCESS) {
+                if (resource.getData() != null && !resource.getData().isEmpty()) {
+                    // Theo yêu cầu mới: Luôn lấy địa chỉ đầu tiên (vì chỉ có 1)
+                    selectedAddress = resource.getData().get(0);
                     binding.tvSelectedAddress.setText(selectedAddress.getAddress());
-                } else if (addresses.isEmpty()) {
+                } else {
+                    // Xử lý trường hợp người dùng chưa có địa chỉ nào
+                    binding.tvSelectedAddress.setText("Vui lòng thêm địa chỉ");
                     showToast("Vui lòng thêm địa chỉ giao hàng");
-                    // TODO: Chuyển người dùng đến màn hình Thêm Địa chỉ
+                    // TODO: Bạn có thể điều hướng họ đến AddAddressActivity ở đây
                 }
             } else if (resource.getStatus() == Resource.Status.ERROR) {
                 handleError("Không thể tải danh sách địa chỉ: " + resource.getMessage());
@@ -290,5 +294,18 @@ public class CheckoutActivity extends BaseActivity<ActivityCheckoutBinding> {
     protected void hideLoading() {
         binding.progressBar.setVisibility(View.GONE);
         binding.scrollView.setVisibility(View.VISIBLE);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // Luôn tải lại địa chỉ khi quay lại màn hình này.
+        // Điều này đảm bảo nếu người dùng vừa SỬA địa chỉ,
+        // màn hình thanh toán sẽ hiển thị thông tin mới nhất.
+        viewModel.loadAddresses();
+
+        // (Bạn cũng có thể load lại cart nếu cần,
+        // nhưng load địa chỉ là bắt buộc cho kịch bản "sửa")
+        // viewModel.loadCart();
     }
 }
