@@ -3,19 +3,27 @@ package com.example.funfood.presentation.product;
 import android.graphics.Paint;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.Toast;
+
 import androidx.lifecycle.ViewModelProvider;
+
 import com.example.funfood.R;
 import com.example.funfood.databinding.ActivityProductDetailBinding;
 import com.example.funfood.domain.model.Product;
 import com.example.funfood.presentation.base.BaseActivity;
+import com.example.funfood.presentation.cart.CartViewModel;
 import com.example.funfood.util.Constants;
 import com.example.funfood.util.CurrencyUtil;
 import com.example.funfood.util.ImageUtil;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 public class ProductDetailActivity extends BaseActivity<ActivityProductDetailBinding> {
 
     private ProductDetailViewModel viewModel;
+    private CartViewModel cartViewModel;
     private int productId;
+    private int quantity = 1;
+    private Product currentProduct;
 
     @Override
     protected ActivityProductDetailBinding getViewBinding() {
@@ -33,6 +41,7 @@ public class ProductDetailActivity extends BaseActivity<ActivityProductDetailBin
         }
 
         viewModel = new ViewModelProvider(this).get(ProductDetailViewModel.class);
+        cartViewModel = new ViewModelProvider(this).get(CartViewModel.class);
 
         // Cài đặt Toolbar
         setSupportActionBar(binding.toolbar);
@@ -43,10 +52,7 @@ public class ProductDetailActivity extends BaseActivity<ActivityProductDetailBin
         binding.toolbar.setNavigationOnClickListener(v -> finish());
 
         // Nút Thêm vào giỏ
-        binding.btnAddToCart.setOnClickListener(v -> {
-            // TODO: Triển khai logic thêm vào giỏ hàng
-            showToast("Đã thêm vào giỏ hàng!");
-        });
+        binding.btnAddToCart.setOnClickListener(v -> showQuantityDialog());
 
         // Tải dữ liệu
         viewModel.loadProduct(productId);
@@ -54,6 +60,7 @@ public class ProductDetailActivity extends BaseActivity<ActivityProductDetailBin
 
     @Override
     protected void observeData() {
+        // Product Detail
         viewModel.getProductLiveData().observe(this, resource -> {
             if (resource == null) return;
 
@@ -64,11 +71,30 @@ public class ProductDetailActivity extends BaseActivity<ActivityProductDetailBin
                 case SUCCESS:
                     hideLoading();
                     if (resource.getData() != null) {
+                        currentProduct = resource.getData();
                         displayProductInfo(resource.getData());
                     }
                     break;
                 case ERROR:
                     hideLoading();
+                    handleError(resource.getMessage());
+                    break;
+            }
+        });
+
+        // Add to Cart Result
+        cartViewModel.getAddToCartResult().observe(this, resource -> {
+            if (resource == null) return;
+
+            switch (resource.getStatus()) {
+                case LOADING:
+                    showToast("Đang thêm vào giỏ hàng...");
+                    break;
+                case SUCCESS:
+                    showToast("✓ Đã thêm vào giỏ hàng");
+                    quantity = 1; // Reset
+                    break;
+                case ERROR:
                     handleError(resource.getMessage());
                     break;
             }
@@ -108,14 +134,52 @@ public class ProductDetailActivity extends BaseActivity<ActivityProductDetailBin
             binding.tvPrice.setText(CurrencyUtil.formatCurrency(product.getPrice()));
         }
 
-        // Tình trạng (Hết hàng/Còn hàng)
+        // Tình trạng
         if (!product.isAvailable()) {
             binding.btnAddToCart.setText("Hết hàng");
             binding.btnAddToCart.setEnabled(false);
         } else {
-            binding.btnAddToCart.setText("Thêm vào giỏ hàng");
+            binding.btnAddToCart.setText("Thêm vào giỏ hàng (" + quantity + ")");
             binding.btnAddToCart.setEnabled(true);
         }
+    }
+
+    /**
+     * Hiển thị dialog chọn số lượng
+     */
+    private void showQuantityDialog() {
+        if (currentProduct == null) return;
+
+        View dialogView = getLayoutInflater().inflate(R.layout.dialog_quantity_picker, null);
+        android.widget.NumberPicker numberPicker = dialogView.findViewById(R.id.number_picker);
+
+        numberPicker.setMinValue(1);
+        numberPicker.setMaxValue(99);
+        numberPicker.setValue(quantity);
+
+        new MaterialAlertDialogBuilder(this)
+                .setTitle("Chọn số lượng")
+                .setView(dialogView)
+                .setPositiveButton("Thêm", (dialog, which) -> {
+                    quantity = numberPicker.getValue();
+                    addToCart();
+                })
+                .setNegativeButton("Hủy", null)
+                .show();
+    }
+
+    /**
+     * Thêm sản phẩm vào giỏ hàng
+     */
+    private void addToCart() {
+        if (currentProduct == null) return;
+
+        if (!isNetworkAvailable()) {
+            showNetworkError();
+            return;
+        }
+
+        cartViewModel.addToCart(currentProduct.getId(), quantity);
     }
 
     @Override
