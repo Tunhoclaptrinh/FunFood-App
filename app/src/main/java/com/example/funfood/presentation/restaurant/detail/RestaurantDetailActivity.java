@@ -21,12 +21,19 @@ import com.example.funfood.util.Constants;
 import com.example.funfood.util.CurrencyUtil;
 import com.example.funfood.util.ImageUtil;
 
-// Import cho FavoriteViewModel
 import androidx.lifecycle.ViewModel;
 import com.example.funfood.data.remote.RetrofitClient;
 import com.example.funfood.data.remote.api.FavoriteApi;
 import com.example.funfood.data.repository.FavoriteRepository;
 import com.example.funfood.presentation.main.favorite.FavoriteViewModel;
+import android.content.Intent;
+import android.view.Menu;
+import android.view.MenuItem;
+import androidx.annotation.NonNull;
+import com.example.funfood.R;
+import com.example.funfood.presentation.cart.CartActivity;
+
+import android.net.Uri;
 
 public class RestaurantDetailActivity extends BaseActivity<ActivityRestaurantDetailBinding> {
 

@@ -25,7 +25,10 @@ public interface ProductApi {
     );
 
     @GET("products/{id}")
-    Call<ApiResponse<Product>> getProductById(@Path("id") int id);
+    Call<ApiResponse<Product>> getProductById(
+            @Path("id") int id,
+            @Query("_expand") String expand // Thêm tham số _expand
+    );
 
     @GET("restaurants/{id}/products")
     Call<ApiResponse<List<Product>>> getRestaurantProducts(

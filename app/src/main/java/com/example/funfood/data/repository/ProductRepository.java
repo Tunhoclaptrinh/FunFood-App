@@ -57,7 +57,7 @@ public class ProductRepository {
         MutableLiveData<Resource<Product>> result = new MutableLiveData<>();
         result.setValue(Resource.loading(null));
 
-        productApi.getProductById(productId).enqueue(new Callback<ApiResponse<Product>>() {
+        productApi.getProductById(productId, "restaurant").enqueue(new Callback<ApiResponse<Product>>() {
             @Override
             public void onResponse(Call<ApiResponse<Product>> call, Response<ApiResponse<Product>> response) {
                 if (response.isSuccessful() && response.body() != null) {
