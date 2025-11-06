@@ -22,7 +22,6 @@ import androidx.annotation.NonNull;
 import com.example.funfood.R;
 import com.example.funfood.presentation.cart.CartActivity;
 
-import android.content.Intent;
 import android.net.Uri;
 
 public class RestaurantDetailActivity extends BaseActivity<ActivityRestaurantDetailBinding> {
