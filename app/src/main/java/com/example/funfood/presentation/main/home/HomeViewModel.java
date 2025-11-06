@@ -144,6 +144,35 @@ public class HomeViewModel extends AndroidViewModel {
         });
     }
 
+    public void searchProducts(String query) {
+        if (query == null || query.trim().isEmpty()) {
+            loadFeaturedProducts(); // Reset về sản phẩm nổi bật nếu query rỗng
+            return;
+        }
+
+        String lowerCaseQuery = query.toLowerCase().trim();
+
+        // Mô phỏng tìm kiếm bằng cách lấy danh sách và lọc
+        // Sử dụng getProducts(1, 50) để lấy danh sách sản phẩm
+        productRepository.getProducts(1, 50).observeForever(resource -> {
+            if (resource != null && resource.getStatus() == Resource.Status.SUCCESS) {
+                if (resource.getData() != null) {
+                    // Lọc sản phẩm theo tên
+                    List<Product> filteredProducts = new java.util.ArrayList<>();
+                    for (Product product : resource.getData()) {
+                        if (product.getName() != null && product.getName().toLowerCase().contains(lowerCaseQuery)) {
+                            filteredProducts.add(product);
+                        }
+                    }
+                    productsLiveData.setValue(Resource.success(filteredProducts));
+                }
+            } else {
+                // Chuyển tiếp trạng thái loading/error
+                productsLiveData.setValue(resource);
+            }
+        });
+    }
+
     // Filter by category (load products by category)
     public void filterByCategory(int categoryId) {
         selectedCategoryId.setValue(categoryId);
