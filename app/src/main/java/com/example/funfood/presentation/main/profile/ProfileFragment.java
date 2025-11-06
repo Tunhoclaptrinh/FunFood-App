@@ -9,10 +9,12 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.lifecycle.ViewModelProvider;
 
+import com.example.funfood.R;
 import com.example.funfood.databinding.FragmentProfileBinding;
 import com.example.funfood.data.preferences.UserPreferences;
 import com.example.funfood.presentation.base.BaseFragment;
 import com.example.funfood.presentation.profile.ChangePasswordActivity;
+import com.example.funfood.presentation.main.MainActivity;
 
 
 public class ProfileFragment extends BaseFragment<FragmentProfileBinding> {
@@ -24,11 +26,11 @@ public class ProfileFragment extends BaseFragment<FragmentProfileBinding> {
     protected FragmentProfileBinding getViewBinding(LayoutInflater inflater, ViewGroup container) {
         return FragmentProfileBinding.inflate(inflater, container, false);
     }
+
     @Override
     protected void setupViews() {
 
         userPreferences = UserPreferences.getInstance(requireContext());
-
 
         viewModel = new ViewModelProvider(this).get(ProfileViewModel.class);
 
@@ -60,9 +62,21 @@ public class ProfileFragment extends BaseFragment<FragmentProfileBinding> {
             startActivity(intent);
         });
 
+        // CHUYỂN SANG TAB YÊU THÍCH
+        binding.layoutFavorites.setOnClickListener(v -> {
+            if (getActivity() instanceof MainActivity) {
+                MainActivity mainActivity = (MainActivity) getActivity();
+                // Chuyển sang tab yêu thích (ID đúng là navigation_favorites)
+                View bottomNav = mainActivity.findViewById(R.id.bottom_navigation);
+                if (bottomNav instanceof com.google.android.material.bottomnavigation.BottomNavigationView) {
+                    ((com.google.android.material.bottomnavigation.BottomNavigationView) bottomNav)
+                            .setSelectedItemId(R.id.navigation_favorites);
+                }
+            }
+        });
+
         // Các mục chưa có chức năng
         binding.layoutMyOrders.setOnClickListener(v -> showToast("Chức năng 'Đơn hàng' đang được phát triển!"));
-        binding.layoutFavorites.setOnClickListener(v -> showToast("Chức năng 'Yêu thích' đang được phát triển!"));
         binding.layoutLanguage.setOnClickListener(v -> showToast("Chức năng 'Ngôn ngữ' đang được phát triển!"));
         binding.layoutHelp.setOnClickListener(v -> showToast("Chức năng 'Hỗ trợ' đang được phát triển!"));
         binding.layoutAbout.setOnClickListener(v -> showToast("Chức năng 'Về FunFood' đang được phát triển!"));

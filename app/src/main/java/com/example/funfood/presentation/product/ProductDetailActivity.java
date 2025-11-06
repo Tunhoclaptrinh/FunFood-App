@@ -1,27 +1,29 @@
 package com.example.funfood.presentation.product;
 
+import android.content.Intent;
 import android.graphics.Paint;
+import android.net.Uri; // THÊM IMPORT
 import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.example.funfood.R;
 import com.example.funfood.databinding.ActivityProductDetailBinding;
 import com.example.funfood.domain.model.Product;
+import com.example.funfood.domain.model.Restaurant; // THÊM IMPORT
 import com.example.funfood.presentation.base.BaseActivity;
+import com.example.funfood.presentation.cart.CartActivity;
 import com.example.funfood.presentation.cart.CartViewModel;
+import com.example.funfood.presentation.restaurant.detail.RestaurantDetailActivity; // THÊM IMPORT
 import com.example.funfood.util.Constants;
 import com.example.funfood.util.CurrencyUtil;
 import com.example.funfood.util.ImageUtil;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
-
-import android.content.Intent;
-import android.view.Menu;
-import android.view.MenuItem;
-import androidx.annotation.NonNull;
-import com.example.funfood.presentation.cart.CartActivity;
 
 public class ProductDetailActivity extends BaseActivity<ActivityProductDetailBinding> {
 
@@ -79,6 +81,13 @@ public class ProductDetailActivity extends BaseActivity<ActivityProductDetailBin
                     if (resource.getData() != null) {
                         currentProduct = resource.getData();
                         displayProductInfo(resource.getData());
+
+                        // HIỂN THỊ THÔNG TIN NHÀ HÀNG (MỚI)
+                        if (currentProduct.getRestaurant() != null) {
+                            displayRestaurantInfo(currentProduct.getRestaurant());
+                        } else {
+                            binding.cardRestaurantInfo.setVisibility(View.GONE);
+                        }
                     }
                     break;
                 case ERROR:
@@ -149,6 +158,52 @@ public class ProductDetailActivity extends BaseActivity<ActivityProductDetailBin
             binding.btnAddToCart.setEnabled(true);
         }
     }
+
+    /**
+     * Hiển thị thông tin nhà hàng và gán sự kiện click (MỚI)
+     */
+    private void displayRestaurantInfo(Restaurant restaurant) {
+        binding.cardRestaurantInfo.setVisibility(View.VISIBLE);
+
+        binding.tvRestaurantName.setText(restaurant.getName());
+        binding.tvRestaurantAddress.setText(restaurant.getAddress());
+        binding.tvRestaurantPhone.setText(restaurant.getPhone());
+
+        // Click để chuyển sang chi tiết nhà hàng
+        binding.layoutRestaurantInfo.setOnClickListener(v -> {
+            openRestaurantDetail(restaurant.getId());
+        });
+
+        // Click để gọi điện
+        binding.layoutRestaurantPhone.setOnClickListener(v -> {
+            dialPhoneNumber(restaurant.getPhone());
+        });
+    }
+
+    /**
+     * Mở màn hình chi tiết nhà hàng (MỚI)
+     */
+    private void openRestaurantDetail(int restaurantId) {
+        // Giả sử bạn có một Activity tên là RestaurantDetailActivity
+        // và bạn dùng Constants.KEY_RESTAURANT_ID để truyền ID
+        Intent intent = new Intent(this, RestaurantDetailActivity.class);
+        intent.putExtra(Constants.KEY_RESTAURANT_ID, restaurantId);
+        startActivity(intent);
+    }
+
+    /**
+     * Mở trình quay số điện thoại (MỚI)
+     */
+    private void dialPhoneNumber(String phoneNumber) {
+        if (phoneNumber == null || phoneNumber.trim().isEmpty()) {
+            showToast("Nhà hàng không cung cấp số điện thoại");
+            return;
+        }
+        Intent intent = new Intent(Intent.ACTION_DIAL);
+        intent.setData(Uri.parse("tel:" + phoneNumber));
+        startActivity(intent);
+    }
+
 
     /**
      * Hiển thị dialog chọn số lượng
