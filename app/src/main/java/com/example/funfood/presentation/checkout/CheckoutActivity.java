@@ -8,6 +8,7 @@ import android.widget.AutoCompleteTextView; // FIX: Import AutoCompleteTextView
 
 import androidx.lifecycle.ViewModelProvider;
 
+import com.example.funfood.data.remote.dto.request.CreateOrderRequest;
 import com.example.funfood.databinding.ActivityCheckoutBinding;
 import com.example.funfood.data.repository.OrderRepository;
 // FIX: Import lớp CartResponse mới
@@ -264,13 +265,13 @@ public class CheckoutActivity extends BaseActivity<ActivityCheckoutBinding> {
         int restaurantId = currentCart.getItems().get(0).getRestaurant().getId();
 
         // Create order request
-        List<OrderRepository.OrderItem> orderItems = new ArrayList<>();
+        List<CreateOrderRequest.OrderItem> orderItems = new ArrayList<>();
         // (Đây là CartItem, không phải CartResponse, nên nó đúng)
         for (com.example.funfood.domain.model.CartItem item : currentCart.getItems()) {
-            orderItems.add(new OrderRepository.OrderItem(item.getProductId(), item.getQuantity()));
+            orderItems.add(new CreateOrderRequest.OrderItem(item.getProductId(), item.getQuantity()));
         }
 
-        OrderRepository.CreateOrderRequest request = new OrderRepository.CreateOrderRequest(
+        CreateOrderRequest request = new CreateOrderRequest(
                 restaurantId,
                 orderItems,
                 selectedAddress.getAddress(),

@@ -54,7 +54,7 @@ public class OrderDetailActivity extends BaseActivity<ActivityOrderDetailBinding
         binding.btnBackHome.setOnClickListener(v -> navigateToHome());
 
         // Load order details
-        viewModel.loadOrder(orderId);
+//        viewModel.loadOrder(orderId);
     }
 
     @Override

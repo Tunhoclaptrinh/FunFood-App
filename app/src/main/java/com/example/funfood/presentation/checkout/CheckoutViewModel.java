@@ -8,6 +8,7 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.Observer; // <<< QUAN TRỌNG: Import
 
+import com.example.funfood.data.remote.dto.request.CreateOrderRequest;
 import com.example.funfood.data.remote.dto.response.CartResponse; // <<< FIX: Import mới
 import com.example.funfood.data.repository.AddressRepository;
 import com.example.funfood.data.repository.CartRepository;
@@ -94,7 +95,7 @@ public class CheckoutViewModel extends AndroidViewModel {
     /**
      * Tạo đơn hàng mới
      */
-    public void createOrder(OrderRepository.CreateOrderRequest request) {
+    public void createOrder(CreateOrderRequest request) {
         orderResult.setValue(Resource.loading(null));
 
         // FIX 5: Sửa memory leak

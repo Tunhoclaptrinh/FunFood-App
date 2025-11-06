@@ -28,10 +28,10 @@ public class OrderDetailViewModel extends AndroidViewModel { // FIX: Phải exte
     /**
      * Tải chi tiết đơn hàng
      */
-    public void loadOrder(int orderId) {
-        orderLiveData.setValue(Resource.loading(null));
-        orderRepository.getOrderById(orderId).observeForever(resource -> {
-            orderLiveData.setValue(resource);
-        });
-    }
+//    public void loadOrder(int orderId) {
+//        orderLiveData.setValue(Resource.loading(null));
+//        orderRepository.getOrderById(orderId).observeForever(resource -> {
+//            orderLiveData.setValue(resource);
+//        });
+//    }
 }
