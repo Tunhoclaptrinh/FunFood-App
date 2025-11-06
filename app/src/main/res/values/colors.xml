@@ -36,6 +36,7 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
     <color name="transparent">#00000000</color>
+    <color name="gray">#757575</color>
 
     <!-- Notification -->
     <color name="unread_notification_bg">#F0F8FF</color>
@@ -63,4 +64,11 @@
     <!-- Card -->
     <color name="card_background">#FFFFFF</color>
     <color name="card_shadow">#1A000000</color>
+
+    <!-- Chip Colors -->
+    <color name="chip_text_color">#212121</color>
+    <color name="chip_background_color">#E0E0E0</color>
+    <color name="chip_confirmed_bg">#C8E6C9</color> <!-- xanh lá nhạt -->
+    <color name="chip_cancelled_bg">#FFCDD2</color> <!-- đỏ nhạt -->
+
 </resources>
