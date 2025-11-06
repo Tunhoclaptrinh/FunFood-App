@@ -15,6 +15,16 @@ import com.example.funfood.util.Constants;
 import com.example.funfood.util.CurrencyUtil;
 import com.example.funfood.util.ImageUtil;
 
+import android.content.Intent;
+import android.view.Menu;
+import android.view.MenuItem;
+import androidx.annotation.NonNull;
+import com.example.funfood.R;
+import com.example.funfood.presentation.cart.CartActivity;
+
+import android.content.Intent;
+import android.net.Uri;
+
 public class RestaurantDetailActivity extends BaseActivity<ActivityRestaurantDetailBinding> {
 
     private RestaurantDetailViewModel viewModel;
@@ -158,8 +168,9 @@ public class RestaurantDetailActivity extends BaseActivity<ActivityRestaurantDet
             binding.tvPhone.setText(restaurant.getPhone());
             binding.layoutPhone.setVisibility(View.VISIBLE);
             binding.layoutPhone.setOnClickListener(v -> {
-                // TODO: Make phone call
-                showToast("Gọi: " + restaurant.getPhone());
+                Intent intent = new Intent(Intent.ACTION_DIAL);
+                intent.setData(Uri.parse("tel:" + restaurant.getPhone()));
+                startActivity(intent);
             });
         } else {
             binding.layoutPhone.setVisibility(View.GONE);
@@ -178,6 +189,24 @@ public class RestaurantDetailActivity extends BaseActivity<ActivityRestaurantDet
         }
     }
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // "Thổi" menu của bạn (menu_main.xml) vào Toolbar
+        getMenuInflater().inflate(R.menu.menu_main, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        // Kiểm tra đúng ID 'action_cart' từ file XML của bạn
+        if (item.getItemId() == R.id.action_cart) {
+            // Mở CartActivity
+            Intent intent = new Intent(this, CartActivity.class);
+            startActivity(intent);
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
     @Override
     protected void showLoading() {
         binding.progressBar.setVisibility(View.VISIBLE);

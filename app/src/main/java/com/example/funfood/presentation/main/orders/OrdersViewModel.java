@@ -21,6 +21,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import retrofit2.Call;
+
 public class OrdersViewModel extends BaseViewModel {
     private final OrderRepository orderRepository;
     private final MutableLiveData<ApiResponse<List<Order>>> ordersLiveData = new MutableLiveData<>();
@@ -57,36 +59,16 @@ public class OrdersViewModel extends BaseViewModel {
     public LiveData<Boolean> getCancelSuccess() {
         return cancelSuccessLiveData;
     }
-
+    //Load danh sách đơn hàng theo userId và bộ lọc trạng thái (status)
     /**
      * 🟢 Lấy danh sách đơn hàng của user (có thể lọc theo status)
      */
     public void loadOrders(int userId, String status, int page) {
         loadingLiveData.setValue(true);
 
-        Map<String, String> filters = new HashMap<>();
-        filters.put("userId", String.valueOf(userId));
-        filters.put("_page", String.valueOf(page));
-        filters.put("_limit", "10");
-        filters.put("_sort", "createdAt");
-        filters.put("_order", "desc");
-
-        if (status != null && !status.equalsIgnoreCase("all")) {
-            filters.put("status", status.toLowerCase());
-        }
-
-        // Gọi chung một hàm getMyOrders với filters
-        orderRepository.getMyOrders(filters).observeForever(response -> {
+        orderRepository.getMyOrders(userId, status, page).observeForever(response -> {
             loadingLiveData.setValue(false);
-            if (response.isSuccess() && response.getData() != null) {
-                allOrders = response.getData();
-                ordersLiveData.setValue(response);
-                applyFilter(currentFilter);
-            } else {
-                ordersLiveData.setValue(response);
-                setError(response.getMessage());
-                errorLiveData.setValue("Không thể tải danh sách đơn hàng");
-            }
+            ordersLiveData.setValue(response);
         });
     }
 

@@ -16,7 +16,6 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
-        <!-- Product Image -->
         <ImageView
             android:id="@+id/iv_product"
             android:layout_width="0dp"
@@ -27,7 +26,6 @@
             app:layout_constraintTop_toTopOf="parent"
             tools:src="@drawable/ic_placeholder_image" />
 
-        <!-- Discount Badge -->
         <TextView
             android:id="@+id/tv_discount"
             android:layout_width="wrap_content"
@@ -47,7 +45,6 @@
             tools:text="-20%"
             tools:visibility="visible" />
 
-        <!-- Product Info Container -->
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -57,7 +54,6 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/iv_product">
 
-            <!-- Product Name -->
             <TextView
                 android:id="@+id/tv_name"
                 android:layout_width="match_parent"
@@ -70,7 +66,6 @@
                 android:textStyle="bold"
                 tools:text="Cơm Tấm Sườn Bì Chả" />
 
-            <!-- Description -->
             <TextView
                 android:id="@+id/tv_description"
                 android:layout_width="match_parent"
@@ -84,14 +79,12 @@
                 tools:text="Cơm tấm với sườn nướng"
                 tools:visibility="visible" />
 
-            <!-- Price Container -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="6dp"
                 android:orientation="vertical">
 
-                <!-- Original Price (with strikethrough if discount) -->
                 <TextView
                     android:id="@+id/tv_original_price"
                     android:layout_width="wrap_content"
@@ -102,7 +95,6 @@
                     tools:text="45,000đ"
                     tools:visibility="visible" />
 
-                <!-- Current Price -->
                 <TextView
                     android:id="@+id/tv_price"
                     android:layout_width="wrap_content"
@@ -112,9 +104,48 @@
                     android:textStyle="bold"
                     tools:text="36,000đ" />
             </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/layout_restaurant"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:background="?android:attr/selectableItemBackground"
+                android:clickable="true"
+                android:focusable="true"
+                android:paddingTop="4dp"
+                android:paddingBottom="4dp">
+
+                <androidx.cardview.widget.CardView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    app:cardCornerRadius="12dp"
+                    app:cardElevation="0dp">
+
+                    <ImageView
+                        android:id="@+id/iv_restaurant_logo"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:scaleType="centerCrop"
+                        tools:src="@drawable/ic_placeholder_image" />
+                </androidx.cardview.widget.CardView>
+
+                <TextView
+                    android:id="@+id/tv_restaurant_name"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginStart="8dp"
+                    android:ellipsize="end"
+                    android:maxLines="1"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="12sp"
+                    tools:text="Tên Nhà Hàng Rất Dài" />
+            </LinearLayout>
         </LinearLayout>
 
-        <!-- Unavailable Overlay -->
         <FrameLayout
             android:id="@+id/layout_overlay"
             android:layout_width="0dp"

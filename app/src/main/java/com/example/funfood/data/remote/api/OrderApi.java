@@ -25,7 +25,9 @@ public interface OrderApi {
     //   Lấy danh sách tất cả đơn hàng
     @GET("orders")
     Call<ApiResponse<List<Order>>> getMyOrders(
-            @QueryMap Map<String, String> filters
+//            @QueryMap Map<String, String> filters
+            @Query("_page") int page,
+            @Query("_limit") int limit
     );
 
     // 🟩 2. Lấy tất cả đơn hàng (Admin)

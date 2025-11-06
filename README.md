@@ -876,8 +876,9 @@ This project is proprietary software for FunFood.
 ## 📞 Support
 
 - **Email:** support@funfood.com
-- **Documentation:** [Backend API Docs](../funfood-backend/API_ENDPOINTS.md)
-- **Issues:** [GitHub Issues](https://github.com/your-repo/issues)
+- **Documentation:** [Backend API Docs](https://github.com/Tunhoclaptrinh/FunFood-Backend)
+
+[//]: # (- **Issues:** [GitHub Issues]&#40;https://github.com/your-repo/issues&#41;)
 
 ---
 

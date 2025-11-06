@@ -11,6 +11,8 @@ public class Product {
     private boolean available;
     private int discount; // Percentage discount
 
+    private Restaurant restaurant;
+
     public Product() {}
 
     // Getters and Setters
@@ -32,6 +34,9 @@ public class Product {
     public int getRestaurantId() { return restaurantId; }
     public void setRestaurantId(int restaurantId) { this.restaurantId = restaurantId; }
 
+    public Restaurant getRestaurant() { return restaurant; }
+    public void setRestaurant(Restaurant restaurant) { this.restaurant = restaurant; }
+
     public int getCategoryId() { return categoryId; }
     public void setCategoryId(int categoryId) { this.categoryId = categoryId; }
 
@@ -48,6 +53,8 @@ public class Product {
         }
         return price;
     }
+
+
 
     public boolean hasDiscount() {
         return discount > 0;

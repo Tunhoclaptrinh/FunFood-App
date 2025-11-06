@@ -18,6 +18,7 @@ import com.example.funfood.domain.model.Order;
 import com.example.funfood.util.Resource;
 import com.google.gson.JsonObject;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -41,20 +42,34 @@ public class OrderRepository {
 
     /**
      * 🟩 Lấy danh sách đơn hàng của người dùng (có thể filter).
-     * @param filters Map chứa tham số filter (status, _sort, _page, ...)
      */
 
 //
     // 🟢 1. Lấy danh sách đơn hàng của user hiện tại
-    public LiveData<ApiResponse<List<Order>>> getMyOrders(Map<String, String> filters) {
+    public LiveData<ApiResponse<List<Order>>> getMyOrders(int userId, String status, int page) {
         MutableLiveData<ApiResponse<List<Order>>> data = new MutableLiveData<>();
-        orderApi.getMyOrders(filters).enqueue(new Callback<ApiResponse<List<Order>>>() {
+        int limit = 20;
+        Call<ApiResponse<List<Order>>> call = orderApi.getMyOrders(page, limit);
+        call.enqueue(new Callback<ApiResponse<List<Order>>>() {
             @Override
             public void onResponse(Call<ApiResponse<List<Order>>> call, Response<ApiResponse<List<Order>>> response) {
-                if (response.isSuccessful() && response.body() != null) {
-                    data.setValue(response.body());
+                if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
+                    List<Order> allOrders = response.body().getData();
+                    List<Order> filteredOrders = new ArrayList<>();
+
+                    if (status.equalsIgnoreCase("all")) {
+                        filteredOrders = allOrders;
+                    } else {
+                        for (Order order : allOrders) {
+                            if (order.getStatus() != null && order.getStatus().equalsIgnoreCase(status)) {
+                                filteredOrders.add(order);
+                            }
+                        }
+                    }
+
+                    data.setValue(new ApiResponse<>(true, "Lấy danh sách đơn hàng thành công", filteredOrders));
                 } else {
-                    data.setValue(new ApiResponse<>(false, "Failed to load orders", null));
+                    data.setValue(new ApiResponse<>(false, "Không thể tải danh sách đơn hàng", null));
                 }
             }
 
@@ -109,24 +124,32 @@ public class OrderRepository {
     }
 
     // 🟢 4. Tạo đơn hàng mới
-    public LiveData<ApiResponse<Order>> createOrder(CreateOrderRequest orderBody) {
-        MutableLiveData<ApiResponse<Order>> data = new MutableLiveData<>();
-        orderApi.createOrder(orderBody).enqueue(new Callback<ApiResponse<Order>>() {
+    public LiveData<Resource<Order>> createOrder(CreateOrderRequest request) {
+        MutableLiveData<Resource<Order>> result = new MutableLiveData<>();
+        result.setValue(Resource.loading(null));
+
+        orderApi.createOrder(request).enqueue(new Callback<ApiResponse<Order>>() {
             @Override
             public void onResponse(Call<ApiResponse<Order>> call, Response<ApiResponse<Order>> response) {
                 if (response.isSuccessful() && response.body() != null) {
-                    data.setValue(response.body());
+                    ApiResponse<Order> apiResponse = response.body();
+                    if (apiResponse.isSuccess()) {
+                        result.setValue(Resource.success(apiResponse.getData()));
+                    } else {
+                        result.setValue(Resource.error(apiResponse.getMessage(), null));
+                    }
                 } else {
-                    data.setValue(new ApiResponse<>(false, "Failed to create order", null));
+                    result.setValue(Resource.error("Không thể tạo đơn hàng", null));
                 }
             }
 
             @Override
             public void onFailure(Call<ApiResponse<Order>> call, Throwable t) {
-                data.setValue(new ApiResponse<>(false, t.getMessage(), null));
+                result.setValue(Resource.error(t.getMessage(), null));
             }
         });
-        return data;
+
+        return result;
     }
 
     // 🟢 5. Cập nhật trạng thái đơn hàng
@@ -169,6 +192,8 @@ public class OrderRepository {
             }
         });
         return data;
+
+
     }
 }
 
