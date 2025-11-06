@@ -173,6 +173,7 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
                     String query = s.toString().trim();
                     if (!query.isEmpty()) {
                         viewModel.searchRestaurants(query);
+                        viewModel.searchProducts(query);
                         // Hide categories, promotions and featured products when searching
                         binding.layoutCategories.setVisibility(View.GONE);
                         binding.layoutPromotions.setVisibility(View.GONE);
@@ -359,7 +360,7 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
 
     // Handlers
     private void handleCategoryClick(Category category) {
-        viewModel.filterByCategory(category.getId());
+//        viewModel.filterByCategory(category.getId());
         showToast("Đang tải sản phẩm " + category.getName());
 
         // Option 1: Navigate to product list filtered by category
