@@ -100,7 +100,7 @@
         <!-- Google Maps API Key -->
         <meta-data
             android:name="com.google.android.geo.API_KEY"
-            android:value="AIzaSyDLy_wi7gBNS_JKSx4IQxv2A2HLUW-94sQ" />
+            android:value="94sQ-AIzaSyDLy_wi7gBNS_JKSx4IQxv2A2HLUW-94sQ-94sQ" />
 
 
         <activity

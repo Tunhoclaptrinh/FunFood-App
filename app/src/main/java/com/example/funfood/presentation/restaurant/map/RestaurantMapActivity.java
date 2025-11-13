@@ -4,12 +4,11 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.example.funfood.databinding.ActivityRestaurantMapBinding; // Cần đảm bảo binding này khớp với layout
+import com.example.funfood.databinding.ActivityRestaurantMapBinding;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.MapView; // THAY ĐỔI: Import MapView
+import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.OnMapReadyCallback;
-// import com.google.android.gms.maps.SupportMapFragment; // BỎ
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
@@ -47,8 +46,6 @@ public class RestaurantMapActivity extends AppCompatActivity implements OnMapRea
             getSupportActionBar().setTitle("Vị trí: " + restaurantName);
         }
         binding.toolbar.setNavigationOnClickListener(v -> finish());
-
-        // THAY ĐỔI: Logic khởi tạo MapView
 
         // 1. Tìm MapView bằng ID
         mapView = binding.map; // Giả sử ID trong binding là 'map'
