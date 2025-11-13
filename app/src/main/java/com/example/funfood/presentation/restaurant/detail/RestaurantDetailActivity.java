@@ -17,6 +17,7 @@ import com.example.funfood.presentation.base.BaseActivity;
 import com.example.funfood.presentation.product.ProductDetailActivity;
 import com.example.funfood.presentation.restaurant.detail.adapter.ProductAdapter;
 import com.example.funfood.presentation.cart.CartActivity;
+import com.example.funfood.presentation.restaurant.map.RestaurantMapActivity;
 import com.example.funfood.util.Constants;
 import com.example.funfood.util.CurrencyUtil;
 import com.example.funfood.util.ImageUtil;
@@ -34,6 +35,7 @@ import com.example.funfood.R;
 import com.example.funfood.presentation.cart.CartActivity;
 
 import android.net.Uri;
+import android.widget.Toast;
 
 public class RestaurantDetailActivity extends BaseActivity<ActivityRestaurantDetailBinding> {
 
@@ -227,9 +229,28 @@ public class RestaurantDetailActivity extends BaseActivity<ActivityRestaurantDet
         if (restaurant.getAddress() != null) {
             binding.tvAddress.setText(restaurant.getAddress());
             binding.layoutAddress.setVisibility(View.VISIBLE);
+
+            // THÊM MỚI: Click listener cho địa chỉ
+            binding.layoutAddress.setOnClickListener(v -> {
+                // Kiểm tra xem có tọa độ không
+                if (restaurant.getLatitude() != 0 || restaurant.getLongitude() != 0) {
+                    // Mở RestaurantMapActivity
+                    Intent intent = new Intent(this, RestaurantMapActivity.class);
+                    intent.putExtra(RestaurantMapActivity.EXTRA_NAME, restaurant.getName());
+                    intent.putExtra(RestaurantMapActivity.EXTRA_LAT, restaurant.getLatitude());
+                    intent.putExtra(RestaurantMapActivity.EXTRA_LNG, restaurant.getLongitude());
+                    startActivity(intent);
+                } else {
+                    // Thông báo nếu không có tọa độ
+                    Toast.makeText(this, "Không có thông tin vị trí cho nhà hàng này", Toast.LENGTH_SHORT).show();
+                }
+            });
+
         } else {
             binding.layoutAddress.setVisibility(View.GONE);
         }
+
+
 
         // Phone
         if (restaurant.getPhone() != null) {

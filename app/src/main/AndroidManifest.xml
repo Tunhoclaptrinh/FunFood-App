@@ -100,7 +100,7 @@
         <!-- Google Maps API Key -->
         <meta-data
             android:name="com.google.android.geo.API_KEY"
-            android:value="YOUR_GOOGLE_MAPS_API_KEY" />
+            android:value="AIzaSyDLy_wi7gBNS_JKSx4IQxv2A2HLUW-94sQ" />
 
 
         <activity
@@ -108,6 +108,11 @@
             android:exported="false"
             android:theme="@style/Theme.FunFood" />
 
+
+        <activity
+            android:name=".presentation.restaurant.map.RestaurantMapActivity"
+            android:exported="false"
+            android:theme="@style/Theme.FunFood" />
 
     </application>
 
